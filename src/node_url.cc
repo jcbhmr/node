@@ -78,7 +78,7 @@ void BindingData::DomainToASCII(const FunctionCallbackInfo<Value>& args) {
 
   std::string input = Utf8Value(env->isolate(), args[0]).ToString();
   if (input.empty()) {
-    return args.GetReturnValue().Set(FIXED_ONE_BYTE_STRING(env->isolate(), ""));
+    return args.GetReturnValue().Set(String::Empty(env->isolate()));
   }
 
   // It is important to have an initial value that contains a special scheme.
@@ -87,7 +87,7 @@ void BindingData::DomainToASCII(const FunctionCallbackInfo<Value>& args) {
   auto out = ada::parse<ada::url>("ws://x");
   DCHECK(out);
   if (!out->set_hostname(input)) {
-    return args.GetReturnValue().Set(FIXED_ONE_BYTE_STRING(env->isolate(), ""));
+    return args.GetReturnValue().Set(String::Empty(env->isolate()));
   }
   std::string host = out->get_hostname();
   args.GetReturnValue().Set(
@@ -100,14 +100,17 @@ void BindingData::DomainToUnicode(const FunctionCallbackInfo<Value>& args) {
   CHECK(args[0]->IsString());
 
   std::string input = Utf8Value(env->isolate(), args[0]).ToString();
+  if (input.empty()) {
+    return args.GetReturnValue().Set(String::Empty(env->isolate()));
+  }
+
   // It is important to have an initial value that contains a special scheme.
   // Since it will change the implementation of `set_hostname` according to URL
   // spec.
   auto out = ada::parse<ada::url>("ws://x");
   DCHECK(out);
   if (!out->set_hostname(input)) {
-    return args.GetReturnValue().Set(
-        String::NewFromUtf8(env->isolate(), "").ToLocalChecked());
+    return args.GetReturnValue().Set(String::Empty(env->isolate()));
   }
   std::string result = ada::unicode::to_unicode(out->get_hostname());
 
@@ -203,7 +206,7 @@ void BindingData::Format(const FunctionCallbackInfo<Value>& args) {
     out->hash = std::nullopt;
   }
 
-  if (unicode) {
+  if (unicode && out->has_hostname()) {
     out->host = ada::idna::to_unicode(out->get_hostname());
   }
 
@@ -224,6 +227,35 @@ void BindingData::Format(const FunctionCallbackInfo<Value>& args) {
                                 .ToLocalChecked());
 }
 
+void BindingData::ThrowInvalidURL(node::Environment* env,
+                                  std::string_view input,
+                                  std::optional<std::string> base) {
+  Local<Value> err = ERR_INVALID_URL(env->isolate(), "Invalid URL");
+  DCHECK(err->IsObject());
+
+  auto err_object = err.As<Object>();
+
+  USE(err_object->Set(env->context(),
+                      env->input_string(),
+                      v8::String::NewFromUtf8(env->isolate(),
+                                              input.data(),
+                                              v8::NewStringType::kNormal,
+                                              input.size())
+                          .ToLocalChecked()));
+
+  if (base.has_value()) {
+    USE(err_object->Set(env->context(),
+                        env->base_string(),
+                        v8::String::NewFromUtf8(env->isolate(),
+                                                base.value().c_str(),
+                                                v8::NewStringType::kNormal,
+                                                base.value().size())
+                            .ToLocalChecked()));
+  }
+
+  env->isolate()->ThrowException(err);
+}
+
 void BindingData::Parse(const FunctionCallbackInfo<Value>& args) {
   CHECK_GE(args.Length(), 1);
   CHECK(args[0]->IsString());  // input
@@ -232,15 +264,16 @@ void BindingData::Parse(const FunctionCallbackInfo<Value>& args) {
   Realm* realm = Realm::GetCurrent(args);
   BindingData* binding_data = realm->GetBindingData<BindingData>();
   Isolate* isolate = realm->isolate();
+  std::optional<std::string> base_{};
 
   Utf8Value input(isolate, args[0]);
   ada::result<ada::url_aggregator> base;
   ada::url_aggregator* base_pointer = nullptr;
   if (args[1]->IsString()) {
-    base =
-        ada::parse<ada::url_aggregator>(Utf8Value(isolate, args[1]).ToString());
+    base_ = Utf8Value(isolate, args[1]).ToString();
+    base = ada::parse<ada::url_aggregator>(*base_);
     if (!base) {
-      return args.GetReturnValue().Set(false);
+      return ThrowInvalidURL(realm->env(), input.ToStringView(), base_);
     }
     base_pointer = &base.value();
   }
@@ -248,7 +281,7 @@ void BindingData::Parse(const FunctionCallbackInfo<Value>& args) {
       ada::parse<ada::url_aggregator>(input.ToStringView(), base_pointer);
 
   if (!out) {
-    return args.GetReturnValue().Set(false);
+    return ThrowInvalidURL(realm->env(), input.ToStringView(), base_);
   }
 
   binding_data->UpdateComponents(out->get_components(), out->type);

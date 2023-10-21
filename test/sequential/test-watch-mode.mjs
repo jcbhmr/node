@@ -117,7 +117,7 @@ describe('watch mode', { concurrency: true, timeout: 60_000 }, () => {
   it('should watch changes to a file with watch-path', {
     skip: !supportsRecursive,
   }, async () => {
-    const dir = path.join(tmpdir.path, 'subdir1');
+    const dir = tmpdir.resolve('subdir1');
     mkdirSync(dir);
     const file = createTmpFile();
     const watchedFile = createTmpFile('', '.js', dir);
@@ -138,7 +138,7 @@ describe('watch mode', { concurrency: true, timeout: 60_000 }, () => {
   it('should watch when running an non-existing file - when specified under --watch-path', {
     skip: !supportsRecursive
   }, async () => {
-    const dir = path.join(tmpdir.path, 'subdir2');
+    const dir = tmpdir.resolve('subdir2');
     mkdirSync(dir);
     const file = path.join(dir, 'non-existing.js');
     const watchedFile = createTmpFile('', '.js', dir);
@@ -156,7 +156,7 @@ describe('watch mode', { concurrency: true, timeout: 60_000 }, () => {
   it('should watch when running an non-existing file - when specified under --watch-path with equals', {
     skip: !supportsRecursive
   }, async () => {
-    const dir = path.join(tmpdir.path, 'subdir3');
+    const dir = tmpdir.resolve('subdir3');
     mkdirSync(dir);
     const file = path.join(dir, 'non-existing.js');
     const watchedFile = createTmpFile('', '.js', dir);
@@ -277,11 +277,11 @@ console.log(values.random);
 
   it('should not load --import modules in main process', async () => {
     const file = createTmpFile();
-    const imported = pathToFileURL(createTmpFile('setImmediate(() => process.exit(0));'));
+    const imported = pathToFileURL(createTmpFile('process._rawDebug("imported");'));
     const args = ['--import', imported, file];
     const { stderr, stdout } = await runWriteSucceed({ file, watchedFile: file, args });
 
-    assert.strictEqual(stderr, '');
+    assert.strictEqual(stderr, 'imported\nimported\n');
     assert.deepStrictEqual(stdout, [
       'running',
       `Completed running ${inspect(file)}`,
@@ -295,21 +295,21 @@ console.log(values.random);
   it('should not watch when running an missing file', {
     skip: !supportsRecursive
   }, async () => {
-    const nonExistingfile = path.join(tmpdir.path, `${tmpFiles++}.js`);
+    const nonExistingfile = tmpdir.resolve(`${tmpFiles++}.js`);
     await failWriteSucceed({ file: nonExistingfile, watchedFile: nonExistingfile });
   });
 
   it('should not watch when running an missing mjs file', {
     skip: !supportsRecursive
   }, async () => {
-    const nonExistingfile = path.join(tmpdir.path, `${tmpFiles++}.mjs`);
+    const nonExistingfile = tmpdir.resolve(`${tmpFiles++}.mjs`);
     await failWriteSucceed({ file: nonExistingfile, watchedFile: nonExistingfile });
   });
 
   it('should watch changes to previously missing dependency', {
     skip: !supportsRecursive
   }, async () => {
-    const dependency = path.join(tmpdir.path, `${tmpFiles++}.js`);
+    const dependency = tmpdir.resolve(`${tmpFiles++}.js`);
     const relativeDependencyPath = `./${path.basename(dependency)}`;
     const dependant = createTmpFile(`console.log(require('${relativeDependencyPath}'))`);
 
@@ -320,7 +320,7 @@ console.log(values.random);
     skip: !supportsRecursive
   }, async () => {
     const relativeDependencyPath = `./${tmpFiles++}.mjs`;
-    const dependency = path.join(tmpdir.path, relativeDependencyPath);
+    const dependency = tmpdir.resolve(relativeDependencyPath);
     const dependant = createTmpFile(`import ${JSON.stringify(relativeDependencyPath)}`, '.mjs');
 
     await failWriteSucceed({ file: dependant, watchedFile: dependency });

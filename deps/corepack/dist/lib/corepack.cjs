@@ -5,6 +5,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __esm = (fn2, res) => function __init() {
   return fn2 && (res = (0, fn2[__getOwnPropNames(fn2)[0]])(fn2 = 0)), res;
 };
@@ -32,8 +33,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
 
-// .yarn/cache/typanion-npm-3.12.1-788497c54f-492540c6ac.zip/node_modules/typanion/lib/index.mjs
+// .yarn/cache/typanion-npm-3.12.1-788497c54f-90cf558a34.zip/node_modules/typanion/lib/index.mjs
 var lib_exports = {};
 __export(lib_exports, {
   KeyRelationship: () => KeyRelationship,
@@ -919,7 +924,7 @@ function hasKeyRelationship(subject, relationship, others, { ignore = [] } = {})
 }
 var simpleKeyRegExp, colorStringRegExp, colorStringAlphaRegExp, base64RegExp, uuid4RegExp, iso8601RegExp, BOOLEAN_COERCIONS, isInstanceOf, isOneOf, TypeAssertionError, checks, KeyRelationship, keyRelationships;
 var init_lib = __esm({
-  ".yarn/cache/typanion-npm-3.12.1-788497c54f-492540c6ac.zip/node_modules/typanion/lib/index.mjs"() {
+  ".yarn/cache/typanion-npm-3.12.1-788497c54f-90cf558a34.zip/node_modules/typanion/lib/index.mjs"() {
     simpleKeyRegExp = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
     colorStringRegExp = /^#[0-9a-f]{6}$/i;
     colorStringAlphaRegExp = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
@@ -1010,14 +1015,15 @@ var init_lib = __esm({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/constants.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/constants.js
 var require_constants = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/constants.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/constants.js"(exports, module2) {
     var SEMVER_SPEC_VERSION = "2.0.0";
     var MAX_LENGTH = 256;
     var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || /* istanbul ignore next */
     9007199254740991;
     var MAX_SAFE_COMPONENT_LENGTH = 16;
+    var MAX_SAFE_BUILD_LENGTH = MAX_LENGTH - 6;
     var RELEASE_TYPES = [
       "major",
       "premajor",
@@ -1030,6 +1036,7 @@ var require_constants = __commonJS({
     module2.exports = {
       MAX_LENGTH,
       MAX_SAFE_COMPONENT_LENGTH,
+      MAX_SAFE_BUILD_LENGTH,
       MAX_SAFE_INTEGER,
       RELEASE_TYPES,
       SEMVER_SPEC_VERSION,
@@ -1039,42 +1046,57 @@ var require_constants = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/debug.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/debug.js
 var require_debug = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/debug.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/debug.js"(exports, module2) {
     var debug2 = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
     };
     module2.exports = debug2;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/re.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/re.js
 var require_re = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/re.js"(exports, module2) {
-    var { MAX_SAFE_COMPONENT_LENGTH } = require_constants();
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/re.js"(exports, module2) {
+    var { MAX_SAFE_COMPONENT_LENGTH, MAX_SAFE_BUILD_LENGTH } = require_constants();
     var debug2 = require_debug();
     exports = module2.exports = {};
     var re = exports.re = [];
+    var safeRe = exports.safeRe = [];
     var src = exports.src = [];
     var t = exports.t = {};
     var R = 0;
+    var LETTERDASHNUMBER = "[a-zA-Z0-9-]";
+    var safeRegexReplacements = [
+      ["\\s", 1],
+      ["\\d", MAX_SAFE_COMPONENT_LENGTH],
+      [LETTERDASHNUMBER, MAX_SAFE_BUILD_LENGTH]
+    ];
+    var makeSafeRegex = (value) => {
+      for (const [token, max] of safeRegexReplacements) {
+        value = value.split(`${token}*`).join(`${token}{0,${max}}`).split(`${token}+`).join(`${token}{1,${max}}`);
+      }
+      return value;
+    };
     var createToken = (name, value, isGlobal) => {
+      const safe = makeSafeRegex(value);
       const index = R++;
       debug2(name, index, value);
       t[name] = index;
       src[index] = value;
       re[index] = new RegExp(value, isGlobal ? "g" : void 0);
+      safeRe[index] = new RegExp(safe, isGlobal ? "g" : void 0);
     };
     createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
-    createToken("NUMERICIDENTIFIERLOOSE", "[0-9]+");
-    createToken("NONNUMERICIDENTIFIER", "\\d*[a-zA-Z-][a-zA-Z0-9-]*");
+    createToken("NUMERICIDENTIFIERLOOSE", "\\d+");
+    createToken("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${LETTERDASHNUMBER}*`);
     createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})`);
     createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})`);
     createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NUMERICIDENTIFIER]}|${src[t.NONNUMERICIDENTIFIER]})`);
     createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`);
     createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
     createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
-    createToken("BUILDIDENTIFIER", "[0-9A-Za-z-]+");
+    createToken("BUILDIDENTIFIER", `${LETTERDASHNUMBER}+`);
     createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
     createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
     createToken("FULL", `^${src[t.FULLPLAIN]}$`);
@@ -1111,9 +1133,9 @@ var require_re = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/parse-options.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/parse-options.js
 var require_parse_options = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/parse-options.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/parse-options.js"(exports, module2) {
     var looseOption = Object.freeze({ loose: true });
     var emptyOpts = Object.freeze({});
     var parseOptions = (options) => {
@@ -1129,9 +1151,9 @@ var require_parse_options = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/identifiers.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/identifiers.js
 var require_identifiers = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/internal/identifiers.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/internal/identifiers.js"(exports, module2) {
     var numeric = /^[0-9]+$/;
     var compareIdentifiers = (a, b) => {
       const anum = numeric.test(a);
@@ -1150,12 +1172,12 @@ var require_identifiers = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/classes/semver.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/classes/semver.js
 var require_semver = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/classes/semver.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/classes/semver.js"(exports, module2) {
     var debug2 = require_debug();
     var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants();
-    var { re, t } = require_re();
+    var { safeRe: re, t } = require_re();
     var parseOptions = require_parse_options();
     var { compareIdentifiers } = require_identifiers();
     var SemVer = class {
@@ -1381,8 +1403,10 @@ var require_semver = __commonJS({
           default:
             throw new Error(`invalid increment argument: ${release}`);
         }
-        this.format();
-        this.raw = this.version;
+        this.raw = this.format();
+        if (this.build.length) {
+          this.raw += `+${this.build.join(".")}`;
+        }
         return this;
       }
     };
@@ -1390,9 +1414,9 @@ var require_semver = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/parse.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/parse.js
 var require_parse = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/parse.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/parse.js"(exports, module2) {
     var SemVer = require_semver();
     var parse = (version2, options, throwErrors = false) => {
       if (version2 instanceof SemVer) {
@@ -1411,9 +1435,9 @@ var require_parse = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/valid.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/valid.js
 var require_valid = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/valid.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/valid.js"(exports, module2) {
     var parse = require_parse();
     var valid = (version2, options) => {
       const v = parse(version2, options);
@@ -1423,9 +1447,9 @@ var require_valid = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/clean.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/clean.js
 var require_clean = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/clean.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/clean.js"(exports, module2) {
     var parse = require_parse();
     var clean = (version2, options) => {
       const s = parse(version2.trim().replace(/^[=v]+/, ""), options);
@@ -1435,9 +1459,9 @@ var require_clean = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/inc.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/inc.js
 var require_inc = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/inc.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/inc.js"(exports, module2) {
     var SemVer = require_semver();
     var inc = (version2, release, options, identifier, identifierBase) => {
       if (typeof options === "string") {
@@ -1458,9 +1482,9 @@ var require_inc = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/diff.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/diff.js
 var require_diff = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/diff.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/diff.js"(exports, module2) {
     var parse = require_parse();
     var diff = (version1, version2) => {
       const v1 = parse(version1, null, true);
@@ -1473,6 +1497,19 @@ var require_diff = __commonJS({
       const highVersion = v1Higher ? v1 : v2;
       const lowVersion = v1Higher ? v2 : v1;
       const highHasPre = !!highVersion.prerelease.length;
+      const lowHasPre = !!lowVersion.prerelease.length;
+      if (lowHasPre && !highHasPre) {
+        if (!lowVersion.patch && !lowVersion.minor) {
+          return "major";
+        }
+        if (highVersion.patch) {
+          return "patch";
+        }
+        if (highVersion.minor) {
+          return "minor";
+        }
+        return "major";
+      }
       const prefix = highHasPre ? "pre" : "";
       if (v1.major !== v2.major) {
         return prefix + "major";
@@ -1483,51 +1520,42 @@ var require_diff = __commonJS({
       if (v1.patch !== v2.patch) {
         return prefix + "patch";
       }
-      if (highHasPre) {
-        return "prerelease";
-      }
-      if (lowVersion.patch) {
-        return "patch";
-      }
-      if (lowVersion.minor) {
-        return "minor";
-      }
-      return "major";
+      return "prerelease";
     };
     module2.exports = diff;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/major.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/major.js
 var require_major = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/major.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/major.js"(exports, module2) {
     var SemVer = require_semver();
     var major = (a, loose) => new SemVer(a, loose).major;
     module2.exports = major;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/minor.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/minor.js
 var require_minor = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/minor.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/minor.js"(exports, module2) {
     var SemVer = require_semver();
     var minor = (a, loose) => new SemVer(a, loose).minor;
     module2.exports = minor;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/patch.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/patch.js
 var require_patch = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/patch.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/patch.js"(exports, module2) {
     var SemVer = require_semver();
     var patch = (a, loose) => new SemVer(a, loose).patch;
     module2.exports = patch;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/prerelease.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/prerelease.js
 var require_prerelease = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/prerelease.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/prerelease.js"(exports, module2) {
     var parse = require_parse();
     var prerelease = (version2, options) => {
       const parsed = parse(version2, options);
@@ -1537,36 +1565,36 @@ var require_prerelease = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/compare.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/compare.js
 var require_compare = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/compare.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/compare.js"(exports, module2) {
     var SemVer = require_semver();
     var compare = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
     module2.exports = compare;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/rcompare.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/rcompare.js
 var require_rcompare = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/rcompare.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/rcompare.js"(exports, module2) {
     var compare = require_compare();
     var rcompare = (a, b, loose) => compare(b, a, loose);
     module2.exports = rcompare;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/compare-loose.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/compare-loose.js
 var require_compare_loose = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/compare-loose.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/compare-loose.js"(exports, module2) {
     var compare = require_compare();
     var compareLoose = (a, b) => compare(a, b, true);
     module2.exports = compareLoose;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/compare-build.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/compare-build.js
 var require_compare_build = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/compare-build.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/compare-build.js"(exports, module2) {
     var SemVer = require_semver();
     var compareBuild = (a, b, loose) => {
       const versionA = new SemVer(a, loose);
@@ -1577,81 +1605,81 @@ var require_compare_build = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/sort.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/sort.js
 var require_sort = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/sort.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/sort.js"(exports, module2) {
     var compareBuild = require_compare_build();
     var sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
     module2.exports = sort;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/rsort.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/rsort.js
 var require_rsort = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/rsort.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/rsort.js"(exports, module2) {
     var compareBuild = require_compare_build();
     var rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
     module2.exports = rsort;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/gt.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/gt.js
 var require_gt = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/gt.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/gt.js"(exports, module2) {
     var compare = require_compare();
     var gt = (a, b, loose) => compare(a, b, loose) > 0;
     module2.exports = gt;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/lt.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/lt.js
 var require_lt = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/lt.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/lt.js"(exports, module2) {
     var compare = require_compare();
     var lt = (a, b, loose) => compare(a, b, loose) < 0;
     module2.exports = lt;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/eq.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/eq.js
 var require_eq = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/eq.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/eq.js"(exports, module2) {
     var compare = require_compare();
     var eq = (a, b, loose) => compare(a, b, loose) === 0;
     module2.exports = eq;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/neq.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/neq.js
 var require_neq = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/neq.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/neq.js"(exports, module2) {
     var compare = require_compare();
     var neq = (a, b, loose) => compare(a, b, loose) !== 0;
     module2.exports = neq;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/gte.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/gte.js
 var require_gte = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/gte.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/gte.js"(exports, module2) {
     var compare = require_compare();
     var gte = (a, b, loose) => compare(a, b, loose) >= 0;
     module2.exports = gte;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/lte.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/lte.js
 var require_lte = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/lte.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/lte.js"(exports, module2) {
     var compare = require_compare();
     var lte = (a, b, loose) => compare(a, b, loose) <= 0;
     module2.exports = lte;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/cmp.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/cmp.js
 var require_cmp = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/cmp.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/cmp.js"(exports, module2) {
     var eq = require_eq();
     var neq = require_neq();
     var gt = require_gt();
@@ -1698,12 +1726,12 @@ var require_cmp = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/coerce.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/coerce.js
 var require_coerce = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/coerce.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/coerce.js"(exports, module2) {
     var SemVer = require_semver();
     var parse = require_parse();
-    var { re, t } = require_re();
+    var { safeRe: re, t } = require_re();
     var coerce = (version2, options) => {
       if (version2 instanceof SemVer) {
         return version2;
@@ -1737,9 +1765,9 @@ var require_coerce = __commonJS({
   }
 });
 
-// .yarn/cache/yallist-npm-4.0.0-b493d9e907-cd7fe32508.zip/node_modules/yallist/iterator.js
+// .yarn/cache/yallist-npm-4.0.0-b493d9e907-2286b5e8db.zip/node_modules/yallist/iterator.js
 var require_iterator = __commonJS({
-  ".yarn/cache/yallist-npm-4.0.0-b493d9e907-cd7fe32508.zip/node_modules/yallist/iterator.js"(exports, module2) {
+  ".yarn/cache/yallist-npm-4.0.0-b493d9e907-2286b5e8db.zip/node_modules/yallist/iterator.js"(exports, module2) {
     "use strict";
     module2.exports = function(Yallist) {
       Yallist.prototype[Symbol.iterator] = function* () {
@@ -1751,9 +1779,9 @@ var require_iterator = __commonJS({
   }
 });
 
-// .yarn/cache/yallist-npm-4.0.0-b493d9e907-cd7fe32508.zip/node_modules/yallist/yallist.js
+// .yarn/cache/yallist-npm-4.0.0-b493d9e907-2286b5e8db.zip/node_modules/yallist/yallist.js
 var require_yallist = __commonJS({
-  ".yarn/cache/yallist-npm-4.0.0-b493d9e907-cd7fe32508.zip/node_modules/yallist/yallist.js"(exports, module2) {
+  ".yarn/cache/yallist-npm-4.0.0-b493d9e907-2286b5e8db.zip/node_modules/yallist/yallist.js"(exports, module2) {
     "use strict";
     module2.exports = Yallist;
     Yallist.Node = Node;
@@ -2120,9 +2148,9 @@ var require_yallist = __commonJS({
   }
 });
 
-// .yarn/cache/lru-cache-npm-6.0.0-b4c8668fe1-b2d72088dd.zip/node_modules/lru-cache/index.js
+// .yarn/cache/lru-cache-npm-6.0.0-b4c8668fe1-cb53e58278.zip/node_modules/lru-cache/index.js
 var require_lru_cache = __commonJS({
-  ".yarn/cache/lru-cache-npm-6.0.0-b4c8668fe1-b2d72088dd.zip/node_modules/lru-cache/index.js"(exports, module2) {
+  ".yarn/cache/lru-cache-npm-6.0.0-b4c8668fe1-cb53e58278.zip/node_modules/lru-cache/index.js"(exports, module2) {
     "use strict";
     var Yallist = require_yallist();
     var MAX = Symbol("max");
@@ -2390,9 +2418,9 @@ var require_lru_cache = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/classes/range.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/classes/range.js
 var require_range = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/classes/range.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/classes/range.js"(exports, module2) {
     var Range = class {
       constructor(range, options) {
         options = parseOptions(options);
@@ -2412,10 +2440,10 @@ var require_range = __commonJS({
         this.options = options;
         this.loose = !!options.loose;
         this.includePrerelease = !!options.includePrerelease;
-        this.raw = range;
-        this.set = range.split("||").map((r) => this.parseRange(r.trim())).filter((c) => c.length);
+        this.raw = range.trim().split(/\s+/).join(" ");
+        this.set = this.raw.split("||").map((r) => this.parseRange(r)).filter((c) => c.length);
         if (!this.set.length) {
-          throw new TypeError(`Invalid SemVer Range: ${range}`);
+          throw new TypeError(`Invalid SemVer Range: ${this.raw}`);
         }
         if (this.set.length > 1) {
           const first = this.set[0];
@@ -2434,16 +2462,13 @@ var require_range = __commonJS({
         this.format();
       }
       format() {
-        this.range = this.set.map((comps) => {
-          return comps.join(" ").trim();
-        }).join("||").trim();
+        this.range = this.set.map((comps) => comps.join(" ").trim()).join("||").trim();
         return this.range;
       }
       toString() {
         return this.range;
       }
       parseRange(range) {
-        range = range.trim();
         const memoOpts = (this.options.includePrerelease && FLAG_INCLUDE_PRERELEASE) | (this.options.loose && FLAG_LOOSE);
         const memoKey = memoOpts + ":" + range;
         const cached = cache.get(memoKey);
@@ -2457,8 +2482,9 @@ var require_range = __commonJS({
         range = range.replace(re[t.COMPARATORTRIM], comparatorTrimReplace);
         debug2("comparator trim", range);
         range = range.replace(re[t.TILDETRIM], tildeTrimReplace);
+        debug2("tilde trim", range);
         range = range.replace(re[t.CARETTRIM], caretTrimReplace);
-        range = range.split(/\s+/).join(" ");
+        debug2("caret trim", range);
         let rangeList = range.split(" ").map((comp) => parseComparator(comp, this.options)).join(" ").split(/\s+/).map((comp) => replaceGTE0(comp, this.options));
         if (loose) {
           rangeList = rangeList.filter((comp) => {
@@ -2524,7 +2550,7 @@ var require_range = __commonJS({
     var debug2 = require_debug();
     var SemVer = require_semver();
     var {
-      re,
+      safeRe: re,
       t,
       comparatorTrimReplace,
       tildeTrimReplace,
@@ -2558,9 +2584,9 @@ var require_range = __commonJS({
       return comp;
     };
     var isX = (id) => !id || id.toLowerCase() === "x" || id === "*";
-    var replaceTildes = (comp, options) => comp.trim().split(/\s+/).map((c) => {
-      return replaceTilde(c, options);
-    }).join(" ");
+    var replaceTildes = (comp, options) => {
+      return comp.trim().split(/\s+/).map((c) => replaceTilde(c, options)).join(" ");
+    };
     var replaceTilde = (comp, options) => {
       const r = options.loose ? re[t.TILDELOOSE] : re[t.TILDE];
       return comp.replace(r, (_, M, m, p, pr) => {
@@ -2582,9 +2608,9 @@ var require_range = __commonJS({
         return ret;
       });
     };
-    var replaceCarets = (comp, options) => comp.trim().split(/\s+/).map((c) => {
-      return replaceCaret(c, options);
-    }).join(" ");
+    var replaceCarets = (comp, options) => {
+      return comp.trim().split(/\s+/).map((c) => replaceCaret(c, options)).join(" ");
+    };
     var replaceCaret = (comp, options) => {
       debug2("caret", comp, options);
       const r = options.loose ? re[t.CARETLOOSE] : re[t.CARET];
@@ -2631,9 +2657,7 @@ var require_range = __commonJS({
     };
     var replaceXRanges = (comp, options) => {
       debug2("replaceXRanges", comp, options);
-      return comp.split(/\s+/).map((c) => {
-        return replaceXRange(c, options);
-      }).join(" ");
+      return comp.split(/\s+/).map((c) => replaceXRange(c, options)).join(" ");
     };
     var replaceXRange = (comp, options) => {
       comp = comp.trim();
@@ -2751,9 +2775,9 @@ var require_range = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/classes/comparator.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/classes/comparator.js
 var require_comparator = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/classes/comparator.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/classes/comparator.js"(exports, module2) {
     var ANY = Symbol("SemVer ANY");
     var Comparator = class {
       static get ANY() {
@@ -2768,6 +2792,7 @@ var require_comparator = __commonJS({
             comp = comp.value;
           }
         }
+        comp = comp.trim().split(/\s+/).join(" ");
         debug2("comparator", comp, options);
         this.options = options;
         this.loose = !!options.loose;
@@ -2854,7 +2879,7 @@ var require_comparator = __commonJS({
     };
     module2.exports = Comparator;
     var parseOptions = require_parse_options();
-    var { re, t } = require_re();
+    var { safeRe: re, t } = require_re();
     var cmp = require_cmp();
     var debug2 = require_debug();
     var SemVer = require_semver();
@@ -2862,9 +2887,9 @@ var require_comparator = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/satisfies.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/satisfies.js
 var require_satisfies = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/functions/satisfies.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/functions/satisfies.js"(exports, module2) {
     var Range = require_range();
     var satisfies = (version2, range, options) => {
       try {
@@ -2878,18 +2903,18 @@ var require_satisfies = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/to-comparators.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/to-comparators.js
 var require_to_comparators = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/to-comparators.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/to-comparators.js"(exports, module2) {
     var Range = require_range();
     var toComparators = (range, options) => new Range(range, options).set.map((comp) => comp.map((c) => c.value).join(" ").trim().split(" "));
     module2.exports = toComparators;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/max-satisfying.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/max-satisfying.js
 var require_max_satisfying = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/max-satisfying.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/max-satisfying.js"(exports, module2) {
     var SemVer = require_semver();
     var Range = require_range();
     var maxSatisfying = (versions, range, options) => {
@@ -2915,9 +2940,9 @@ var require_max_satisfying = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/min-satisfying.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/min-satisfying.js
 var require_min_satisfying = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/min-satisfying.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/min-satisfying.js"(exports, module2) {
     var SemVer = require_semver();
     var Range = require_range();
     var minSatisfying = (versions, range, options) => {
@@ -2943,9 +2968,9 @@ var require_min_satisfying = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/min-version.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/min-version.js
 var require_min_version = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/min-version.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/min-version.js"(exports, module2) {
     var SemVer = require_semver();
     var Range = require_range();
     var gt = require_gt();
@@ -2999,9 +3024,9 @@ var require_min_version = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/valid.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/valid.js
 var require_valid2 = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/valid.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/valid.js"(exports, module2) {
     var Range = require_range();
     var validRange = (range, options) => {
       try {
@@ -3014,9 +3039,9 @@ var require_valid2 = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/outside.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/outside.js
 var require_outside = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/outside.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/outside.js"(exports, module2) {
     var SemVer = require_semver();
     var Comparator = require_comparator();
     var { ANY } = Comparator;
@@ -3082,27 +3107,27 @@ var require_outside = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/gtr.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/gtr.js
 var require_gtr = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/gtr.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/gtr.js"(exports, module2) {
     var outside = require_outside();
     var gtr = (version2, range, options) => outside(version2, range, ">", options);
     module2.exports = gtr;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/ltr.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/ltr.js
 var require_ltr = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/ltr.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/ltr.js"(exports, module2) {
     var outside = require_outside();
     var ltr = (version2, range, options) => outside(version2, range, "<", options);
     module2.exports = ltr;
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/intersects.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/intersects.js
 var require_intersects = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/intersects.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/intersects.js"(exports, module2) {
     var Range = require_range();
     var intersects = (r1, r2, options) => {
       r1 = new Range(r1, options);
@@ -3113,9 +3138,9 @@ var require_intersects = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/simplify.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/simplify.js
 var require_simplify = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/simplify.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/simplify.js"(exports, module2) {
     var satisfies = require_satisfies();
     var compare = require_compare();
     module2.exports = (versions, range, options) => {
@@ -3162,9 +3187,9 @@ var require_simplify = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/subset.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/subset.js
 var require_subset = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/ranges/subset.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/ranges/subset.js"(exports, module2) {
     var Range = require_range();
     var Comparator = require_comparator();
     var { ANY } = Comparator;
@@ -3324,9 +3349,9 @@ var require_subset = __commonJS({
   }
 });
 
-// .yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/index.js
+// .yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/index.js
 var require_semver2 = __commonJS({
-  ".yarn/cache/semver-npm-7.5.1-0736382fb9-20fce78943.zip/node_modules/semver/index.js"(exports, module2) {
+  ".yarn/cache/semver-npm-7.5.3-275095dbf3-4cf3bab7e8.zip/node_modules/semver/index.js"(exports, module2) {
     var internalRe = require_re();
     var constants = require_constants();
     var SemVer = require_semver();
@@ -3418,9 +3443,9 @@ var require_semver2 = __commonJS({
   }
 });
 
-// .yarn/cache/ms-npm-2.1.2-ec0c1512ff-3f46af60a0.zip/node_modules/ms/index.js
+// .yarn/cache/ms-npm-2.1.2-ec0c1512ff-a437714e2f.zip/node_modules/ms/index.js
 var require_ms = __commonJS({
-  ".yarn/cache/ms-npm-2.1.2-ec0c1512ff-3f46af60a0.zip/node_modules/ms/index.js"(exports, module2) {
+  ".yarn/cache/ms-npm-2.1.2-ec0c1512ff-a437714e2f.zip/node_modules/ms/index.js"(exports, module2) {
     var s = 1e3;
     var m = s * 60;
     var h = m * 60;
@@ -3534,9 +3559,9 @@ var require_ms = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/common.js
+// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/common.js
 var require_common = __commonJS({
-  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/common.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/common.js"(exports, module2) {
     function setup(env2) {
       createDebug.debug = createDebug;
       createDebug.default = createDebug;
@@ -3697,9 +3722,9 @@ var require_common = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/browser.js
+// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/browser.js
 var require_browser = __commonJS({
-  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/browser.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/browser.js"(exports, module2) {
     exports.formatArgs = formatArgs;
     exports.save = save;
     exports.load = load;
@@ -3866,7 +3891,7 @@ var require_browser = __commonJS({
   }
 });
 
-// .yarn/cache/supports-color-npm-9.3.1-08866b3304-4c447d3aff.zip/node_modules/supports-color/index.js
+// .yarn/cache/supports-color-npm-9.3.1-08866b3304-cf142b72de.zip/node_modules/supports-color/index.js
 var supports_color_exports = {};
 __export(supports_color_exports, {
   createSupportsColor: () => createSupportsColor,
@@ -3983,7 +4008,7 @@ function createSupportsColor(stream, options = {}) {
 }
 var import_node_process, import_node_os, import_node_tty, env, flagForceColor, supportsColor, supports_color_default;
 var init_supports_color = __esm({
-  ".yarn/cache/supports-color-npm-9.3.1-08866b3304-4c447d3aff.zip/node_modules/supports-color/index.js"() {
+  ".yarn/cache/supports-color-npm-9.3.1-08866b3304-cf142b72de.zip/node_modules/supports-color/index.js"() {
     import_node_process = __toESM(require("node:process"), 1);
     import_node_os = __toESM(require("node:os"), 1);
     import_node_tty = __toESM(require("node:tty"), 1);
@@ -4001,9 +4026,9 @@ var init_supports_color = __esm({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/node.js
+// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/node.js
 var require_node = __commonJS({
-  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/node.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/node.js"(exports, module2) {
     var tty3 = require("tty");
     var util = require("util");
     exports.init = init;
@@ -4175,9 +4200,9 @@ var require_node = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/index.js
+// .yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/index.js
 var require_src = __commonJS({
-  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/index.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-80c19f725b/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/index.js"(exports, module2) {
     if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
       module2.exports = require_browser();
     } else {
@@ -4186,9 +4211,9 @@ var require_src = __commonJS({
   }
 });
 
-// .yarn/cache/lru-cache-npm-7.18.3-e68be5b11c-884c7cb519.zip/node_modules/lru-cache/index.js
+// .yarn/cache/lru-cache-npm-7.18.3-e68be5b11c-b3a452b491.zip/node_modules/lru-cache/index.js
 var require_lru_cache2 = __commonJS({
-  ".yarn/cache/lru-cache-npm-7.18.3-e68be5b11c-884c7cb519.zip/node_modules/lru-cache/index.js"(exports, module2) {
+  ".yarn/cache/lru-cache-npm-7.18.3-e68be5b11c-b3a452b491.zip/node_modules/lru-cache/index.js"(exports, module2) {
     var perf = typeof performance === "object" && performance && typeof performance.now === "function" ? performance : Date;
     var hasAbortController = typeof AbortController === "function";
     var AC = hasAbortController ? AbortController : class AbortController {
@@ -5203,9 +5228,9 @@ var require_lru_cache2 = __commonJS({
   }
 });
 
-// .yarn/cache/agent-base-npm-7.0.2-13f6445b9c-a2971dc644.zip/node_modules/agent-base/dist/helpers.js
+// .yarn/cache/agent-base-npm-7.1.0-4b12ba5111-fc974ab57f.zip/node_modules/agent-base/dist/helpers.js
 var require_helpers = __commonJS({
-  ".yarn/cache/agent-base-npm-7.0.2-13f6445b9c-a2971dc644.zip/node_modules/agent-base/dist/helpers.js"(exports) {
+  ".yarn/cache/agent-base-npm-7.1.0-4b12ba5111-fc974ab57f.zip/node_modules/agent-base/dist/helpers.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -5278,9 +5303,9 @@ var require_helpers = __commonJS({
   }
 });
 
-// .yarn/cache/agent-base-npm-7.0.2-13f6445b9c-a2971dc644.zip/node_modules/agent-base/dist/index.js
+// .yarn/cache/agent-base-npm-7.1.0-4b12ba5111-fc974ab57f.zip/node_modules/agent-base/dist/index.js
 var require_dist = __commonJS({
-  ".yarn/cache/agent-base-npm-7.0.2-13f6445b9c-a2971dc644.zip/node_modules/agent-base/dist/index.js"(exports) {
+  ".yarn/cache/agent-base-npm-7.1.0-4b12ba5111-fc974ab57f.zip/node_modules/agent-base/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -5323,27 +5348,34 @@ var require_dist = __commonJS({
     exports.Agent = void 0;
     var http = __importStar2(require("http"));
     __exportStar2(require_helpers(), exports);
-    function isSecureEndpoint() {
-      const { stack } = new Error();
-      if (typeof stack !== "string")
-        return false;
-      return stack.split("\n").some((l) => l.indexOf("(https.js:") !== -1 || l.indexOf("node:https:") !== -1);
-    }
     var INTERNAL = Symbol("AgentBaseInternalState");
     var Agent = class extends http.Agent {
       constructor(opts) {
         super(opts);
         this[INTERNAL] = {};
       }
+      /**
+       * Determine whether this is an `http` or `https` request.
+       */
+      isSecureEndpoint(options) {
+        if (options) {
+          if (typeof options.secureEndpoint === "boolean") {
+            return options.secureEndpoint;
+          }
+          if (typeof options.protocol === "string") {
+            return options.protocol === "https:";
+          }
+        }
+        const { stack } = new Error();
+        if (typeof stack !== "string")
+          return false;
+        return stack.split("\n").some((l) => l.indexOf("(https.js:") !== -1 || l.indexOf("node:https:") !== -1);
+      }
       createSocket(req, options, cb) {
-        let secureEndpoint = typeof options.secureEndpoint === "boolean" ? options.secureEndpoint : void 0;
-        if (typeof secureEndpoint === "undefined" && typeof options.protocol === "string") {
-          secureEndpoint = options.protocol === "https:";
-        }
-        if (typeof secureEndpoint === "undefined") {
-          secureEndpoint = isSecureEndpoint();
-        }
-        const connectOpts = { ...options, secureEndpoint };
+        const connectOpts = {
+          ...options,
+          secureEndpoint: this.isSecureEndpoint(options)
+        };
         Promise.resolve().then(() => this.connect(req, connectOpts)).then((socket) => {
           if (socket instanceof http.Agent) {
             return socket.addRequest(req, connectOpts);
@@ -5369,7 +5401,7 @@ var require_dist = __commonJS({
         }
       }
       get protocol() {
-        return this[INTERNAL].protocol ?? (isSecureEndpoint() ? "https:" : "http:");
+        return this[INTERNAL].protocol ?? (this.isSecureEndpoint() ? "https:" : "http:");
       }
       set protocol(v) {
         if (this[INTERNAL]) {
@@ -5381,9 +5413,9 @@ var require_dist = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/common.js
+// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/common.js
 var require_common2 = __commonJS({
-  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/common.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/common.js"(exports, module2) {
     function setup(env2) {
       createDebug.debug = createDebug;
       createDebug.default = createDebug;
@@ -5544,9 +5576,9 @@ var require_common2 = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/browser.js
+// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/browser.js
 var require_browser2 = __commonJS({
-  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/browser.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/browser.js"(exports, module2) {
     exports.formatArgs = formatArgs;
     exports.save = save;
     exports.load = load;
@@ -5713,9 +5745,9 @@ var require_browser2 = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/node.js
+// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/node.js
 var require_node2 = __commonJS({
-  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/node.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/node.js"(exports, module2) {
     var tty3 = require("tty");
     var util = require("util");
     exports.init = init;
@@ -5887,9 +5919,9 @@ var require_node2 = __commonJS({
   }
 });
 
-// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/index.js
+// .yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/index.js
 var require_src2 = __commonJS({
-  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-ab50d98b6f.zip/node_modules/debug/src/index.js"(exports, module2) {
+  ".yarn/__virtual__/debug-virtual-2eaddcf3b9/0/cache/debug-npm-4.3.4-4513954577-cedbec4529.zip/node_modules/debug/src/index.js"(exports, module2) {
     if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
       module2.exports = require_browser2();
     } else {
@@ -5898,9 +5930,9 @@ var require_src2 = __commonJS({
   }
 });
 
-// .yarn/cache/proxy-from-env-npm-1.1.0-c13d07f26b-0bba2ef7c8.zip/node_modules/proxy-from-env/index.js
+// .yarn/cache/proxy-from-env-npm-1.1.0-c13d07f26b-fe7dd8b1bd.zip/node_modules/proxy-from-env/index.js
 var require_proxy_from_env = __commonJS({
-  ".yarn/cache/proxy-from-env-npm-1.1.0-c13d07f26b-0bba2ef7c8.zip/node_modules/proxy-from-env/index.js"(exports) {
+  ".yarn/cache/proxy-from-env-npm-1.1.0-c13d07f26b-fe7dd8b1bd.zip/node_modules/proxy-from-env/index.js"(exports) {
     "use strict";
     var parseUrl = require("url").parse;
     var DEFAULT_PORTS = {
@@ -5968,9 +6000,9 @@ var require_proxy_from_env = __commonJS({
   }
 });
 
-// .yarn/cache/http-proxy-agent-npm-6.1.0-cac4082d01-3d220db021.zip/node_modules/http-proxy-agent/dist/index.js
+// .yarn/cache/http-proxy-agent-npm-7.0.0-106a57cc8c-a11574ff39.zip/node_modules/http-proxy-agent/dist/index.js
 var require_dist2 = __commonJS({
-  ".yarn/cache/http-proxy-agent-npm-6.1.0-cac4082d01-3d220db021.zip/node_modules/http-proxy-agent/dist/index.js"(exports) {
+  ".yarn/cache/http-proxy-agent-npm-7.0.0-106a57cc8c-a11574ff39.zip/node_modules/http-proxy-agent/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -6015,27 +6047,26 @@ var require_dist2 = __commonJS({
     var events_1 = require("events");
     var agent_base_1 = require_dist();
     var debug2 = (0, debug_1.default)("http-proxy-agent");
-    function isHTTPS(protocol) {
-      return typeof protocol === "string" ? /^https:?$/i.test(protocol) : false;
-    }
     var HttpProxyAgent = class extends agent_base_1.Agent {
-      get secureProxy() {
-        return isHTTPS(this.proxy.protocol);
-      }
       constructor(proxy, opts) {
         super(opts);
         this.proxy = typeof proxy === "string" ? new URL(proxy) : proxy;
         this.proxyHeaders = opts?.headers ?? {};
         debug2("Creating new HttpProxyAgent instance: %o", this.proxy.href);
         const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, "");
-        const port = this.proxy.port ? parseInt(this.proxy.port, 10) : this.secureProxy ? 443 : 80;
+        const port = this.proxy.port ? parseInt(this.proxy.port, 10) : this.proxy.protocol === "https:" ? 443 : 80;
         this.connectOpts = {
           ...opts ? omit(opts, "headers") : null,
           host,
           port
         };
       }
-      async connect(req, opts) {
+      addRequest(req, opts) {
+        req._header = null;
+        this.setRequestProps(req, opts);
+        super.addRequest(req, opts);
+      }
+      setRequestProps(req, opts) {
         const { proxy } = this;
         const protocol = opts.secureEndpoint ? "https:" : "http:";
         const hostname = req.getHeader("host") || "localhost";
@@ -6045,7 +6076,6 @@ var require_dist2 = __commonJS({
           url.port = String(opts.port);
         }
         req.path = String(url);
-        req._header = null;
         const headers = typeof this.proxyHeaders === "function" ? this.proxyHeaders() : { ...this.proxyHeaders };
         if (proxy.username || proxy.password) {
           const auth = `${decodeURIComponent(proxy.username)}:${decodeURIComponent(proxy.password)}`;
@@ -6060,13 +6090,11 @@ var require_dist2 = __commonJS({
             req.setHeader(name, value);
           }
         }
-        let socket;
-        if (this.secureProxy) {
-          debug2("Creating `tls.Socket`: %o", this.connectOpts);
-          socket = tls.connect(this.connectOpts);
-        } else {
-          debug2("Creating `net.Socket`: %o", this.connectOpts);
-          socket = net.connect(this.connectOpts);
+      }
+      async connect(req, opts) {
+        req._header = null;
+        if (!req.path.includes("://")) {
+          this.setRequestProps(req, opts);
         }
         let first;
         let endOfHeaders;
@@ -6078,6 +6106,14 @@ var require_dist2 = __commonJS({
           endOfHeaders = first.indexOf("\r\n\r\n") + 4;
           req.outputData[0].data = req._header + first.substring(endOfHeaders);
           debug2("Output buffer: %o", req.outputData[0].data);
+        }
+        let socket;
+        if (this.proxy.protocol === "https:") {
+          debug2("Creating `tls.Socket`: %o", this.connectOpts);
+          socket = tls.connect(this.connectOpts);
+        } else {
+          debug2("Creating `net.Socket`: %o", this.connectOpts);
+          socket = net.connect(this.connectOpts);
         }
         await (0, events_1.once)(socket, "connect");
         return socket;
@@ -6098,9 +6134,9 @@ var require_dist2 = __commonJS({
   }
 });
 
-// .yarn/cache/https-proxy-agent-npm-6.2.0-0406eb3743-9a7617e512.zip/node_modules/https-proxy-agent/dist/parse-proxy-response.js
+// .yarn/cache/https-proxy-agent-npm-7.0.1-a2d5d93ee0-f08f646809.zip/node_modules/https-proxy-agent/dist/parse-proxy-response.js
 var require_parse_proxy_response = __commonJS({
-  ".yarn/cache/https-proxy-agent-npm-6.2.0-0406eb3743-9a7617e512.zip/node_modules/https-proxy-agent/dist/parse-proxy-response.js"(exports) {
+  ".yarn/cache/https-proxy-agent-npm-7.0.1-a2d5d93ee0-f08f646809.zip/node_modules/https-proxy-agent/dist/parse-proxy-response.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -6123,14 +6159,12 @@ var require_parse_proxy_response = __commonJS({
         function cleanup() {
           socket.removeListener("end", onend);
           socket.removeListener("error", onerror);
-          socket.removeListener("close", onclose);
           socket.removeListener("readable", read);
         }
-        function onclose(err) {
-          debug2("onclose had error %o", err);
-        }
         function onend() {
+          cleanup();
           debug2("onend");
+          reject(new Error("Proxy connection ended before receiving CONNECT response"));
         }
         function onerror(err) {
           cleanup();
@@ -6147,10 +6181,11 @@ var require_parse_proxy_response = __commonJS({
             read();
             return;
           }
-          const headerParts = buffered.toString("ascii").split("\r\n");
+          const headerParts = buffered.slice(0, endOfHeaders).toString("ascii").split("\r\n");
           const firstLine = headerParts.shift();
           if (!firstLine) {
-            throw new Error("No header received");
+            socket.destroy();
+            return reject(new Error("No header received from proxy CONNECT response"));
           }
           const firstLineParts = firstLine.split(" ");
           const statusCode = +firstLineParts[1];
@@ -6161,7 +6196,8 @@ var require_parse_proxy_response = __commonJS({
               continue;
             const firstColon = header.indexOf(":");
             if (firstColon === -1) {
-              throw new Error(`Invalid header: "${header}"`);
+              socket.destroy();
+              return reject(new Error(`Invalid header from proxy CONNECT response: "${header}"`));
             }
             const key = header.slice(0, firstColon).toLowerCase();
             const value = header.slice(firstColon + 1).trimStart();
@@ -6174,7 +6210,7 @@ var require_parse_proxy_response = __commonJS({
               headers[key] = value;
             }
           }
-          debug2("got proxy server response: %o", firstLine);
+          debug2("got proxy server response: %o %o", firstLine, headers);
           cleanup();
           resolve({
             connect: {
@@ -6186,7 +6222,6 @@ var require_parse_proxy_response = __commonJS({
           });
         }
         socket.on("error", onerror);
-        socket.on("close", onclose);
         socket.on("end", onend);
         read();
       });
@@ -6195,9 +6230,9 @@ var require_parse_proxy_response = __commonJS({
   }
 });
 
-// .yarn/cache/https-proxy-agent-npm-6.2.0-0406eb3743-9a7617e512.zip/node_modules/https-proxy-agent/dist/index.js
+// .yarn/cache/https-proxy-agent-npm-7.0.1-a2d5d93ee0-f08f646809.zip/node_modules/https-proxy-agent/dist/index.js
 var require_dist3 = __commonJS({
-  ".yarn/cache/https-proxy-agent-npm-6.2.0-0406eb3743-9a7617e512.zip/node_modules/https-proxy-agent/dist/index.js"(exports) {
+  ".yarn/cache/https-proxy-agent-npm-7.0.1-a2d5d93ee0-f08f646809.zip/node_modules/https-proxy-agent/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -6244,9 +6279,6 @@ var require_dist3 = __commonJS({
     var parse_proxy_response_1 = require_parse_proxy_response();
     var debug2 = (0, debug_1.default)("https-proxy-agent");
     var HttpsProxyAgent = class extends agent_base_1.Agent {
-      get secureProxy() {
-        return isHTTPS(this.proxy.protocol);
-      }
       constructor(proxy, opts) {
         super(opts);
         this.options = { path: void 0 };
@@ -6254,7 +6286,7 @@ var require_dist3 = __commonJS({
         this.proxyHeaders = opts?.headers ?? {};
         debug2("Creating new HttpsProxyAgent instance: %o", this.proxy.href);
         const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, "");
-        const port = this.proxy.port ? parseInt(this.proxy.port, 10) : this.secureProxy ? 443 : 80;
+        const port = this.proxy.port ? parseInt(this.proxy.port, 10) : this.proxy.protocol === "https:" ? 443 : 80;
         this.connectOpts = {
           // Attempt to negotiate http/1.1 for proxy servers that support http/2
           ALPNProtocols: ["http/1.1"],
@@ -6268,12 +6300,12 @@ var require_dist3 = __commonJS({
        * new HTTP request.
        */
       async connect(req, opts) {
-        const { proxy, secureProxy } = this;
+        const { proxy } = this;
         if (!opts.host) {
           throw new TypeError('No "host" provided');
         }
         let socket;
-        if (secureProxy) {
+        if (proxy.protocol === "https:") {
           debug2("Creating `tls.Socket`: %o", this.connectOpts);
           socket = tls.connect(this.connectOpts);
         } else {
@@ -6332,9 +6364,6 @@ var require_dist3 = __commonJS({
     function resume(socket) {
       socket.resume();
     }
-    function isHTTPS(protocol) {
-      return typeof protocol === "string" ? /^https:?$/i.test(protocol) : false;
-    }
     function omit(obj, ...keys) {
       const ret = {};
       let key;
@@ -6348,12 +6377,12 @@ var require_dist3 = __commonJS({
   }
 });
 
-// .yarn/cache/ip-npm-2.0.0-204facb3cc-42a7cf251b.zip/node_modules/ip/lib/ip.js
+// .yarn/cache/ip-npm-2.0.0-204facb3cc-8d186cc558.zip/node_modules/ip/lib/ip.js
 var require_ip = __commonJS({
-  ".yarn/cache/ip-npm-2.0.0-204facb3cc-42a7cf251b.zip/node_modules/ip/lib/ip.js"(exports) {
+  ".yarn/cache/ip-npm-2.0.0-204facb3cc-8d186cc558.zip/node_modules/ip/lib/ip.js"(exports) {
     var ip = exports;
     var { Buffer: Buffer2 } = require("buffer");
-    var os2 = require("os");
+    var os3 = require("os");
     ip.toBuffer = function(ip2, buff, offset) {
       offset = ~~offset;
       let result;
@@ -6610,7 +6639,7 @@ var require_ip = __commonJS({
       return family === "ipv4" ? "127.0.0.1" : "fe80::1";
     };
     ip.address = function(name, family) {
-      const interfaces = os2.networkInterfaces();
+      const interfaces = os3.networkInterfaces();
       family = _normalizeFamily(family);
       if (name && name !== "private" && name !== "public") {
         const res = interfaces[name].filter((details) => {
@@ -6651,9 +6680,9 @@ var require_ip = __commonJS({
   }
 });
 
-// .yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-898a5ce465.zip/node_modules/smart-buffer/build/utils.js
+// .yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-a16775323e.zip/node_modules/smart-buffer/build/utils.js
 var require_utils = __commonJS({
-  ".yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-898a5ce465.zip/node_modules/smart-buffer/build/utils.js"(exports) {
+  ".yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-a16775323e.zip/node_modules/smart-buffer/build/utils.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var buffer_1 = require("buffer");
@@ -6720,9 +6749,9 @@ var require_utils = __commonJS({
   }
 });
 
-// .yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-898a5ce465.zip/node_modules/smart-buffer/build/smartbuffer.js
+// .yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-a16775323e.zip/node_modules/smart-buffer/build/smartbuffer.js
 var require_smartbuffer = __commonJS({
-  ".yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-898a5ce465.zip/node_modules/smart-buffer/build/smartbuffer.js"(exports) {
+  ".yarn/cache/smart-buffer-npm-4.2.0-5ac3f668bb-a16775323e.zip/node_modules/smart-buffer/build/smartbuffer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var utils_1 = require_utils();
@@ -7878,9 +7907,9 @@ var require_smartbuffer = __commonJS({
   }
 });
 
-// .yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/constants.js
+// .yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/constants.js
 var require_constants2 = __commonJS({
-  ".yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/constants.js"(exports) {
+  ".yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/constants.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.SOCKS5_NO_ACCEPTABLE_AUTH = exports.SOCKS5_CUSTOM_AUTH_END = exports.SOCKS5_CUSTOM_AUTH_START = exports.SOCKS_INCOMING_PACKET_SIZES = exports.SocksClientState = exports.Socks5Response = exports.Socks5HostType = exports.Socks5Auth = exports.Socks4Response = exports.SocksCommand = exports.ERRORS = exports.DEFAULT_TIMEOUT = void 0;
@@ -7997,9 +8026,9 @@ var require_constants2 = __commonJS({
   }
 });
 
-// .yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/util.js
+// .yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/util.js
 var require_util = __commonJS({
-  ".yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/util.js"(exports) {
+  ".yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/util.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.shuffleArray = exports.SocksClientError = void 0;
@@ -8020,9 +8049,9 @@ var require_util = __commonJS({
   }
 });
 
-// .yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/helpers.js
+// .yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/helpers.js
 var require_helpers2 = __commonJS({
-  ".yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/helpers.js"(exports) {
+  ".yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/helpers.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.validateSocksClientChainOptions = exports.validateSocksClientOptions = void 0;
@@ -8100,9 +8129,9 @@ var require_helpers2 = __commonJS({
   }
 });
 
-// .yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/receivebuffer.js
+// .yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/receivebuffer.js
 var require_receivebuffer = __commonJS({
-  ".yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/common/receivebuffer.js"(exports) {
+  ".yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/common/receivebuffer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ReceiveBuffer = void 0;
@@ -8148,9 +8177,9 @@ var require_receivebuffer = __commonJS({
   }
 });
 
-// .yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/client/socksclient.js
+// .yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/client/socksclient.js
 var require_socksclient = __commonJS({
-  ".yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/client/socksclient.js"(exports) {
+  ".yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/client/socksclient.js"(exports) {
     "use strict";
     var __awaiter2 = exports && exports.__awaiter || function(thisArg, _arguments, P, generator) {
       function adopt(value) {
@@ -8827,9 +8856,9 @@ var require_socksclient = __commonJS({
   }
 });
 
-// .yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/index.js
+// .yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/index.js
 var require_build = __commonJS({
-  ".yarn/cache/socks-npm-2.7.1-17f2b53052-a8026d6abf.zip/node_modules/socks/build/index.js"(exports) {
+  ".yarn/cache/socks-npm-2.7.1-17f2b53052-43f69dbc9f.zip/node_modules/socks/build/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -8856,9 +8885,9 @@ var require_build = __commonJS({
   }
 });
 
-// .yarn/cache/socks-proxy-agent-npm-8.0.1-646f00d0a1-6df7fae19f.zip/node_modules/socks-proxy-agent/dist/index.js
+// .yarn/cache/socks-proxy-agent-npm-8.0.1-646f00d0a1-3971e6af57.zip/node_modules/socks-proxy-agent/dist/index.js
 var require_dist4 = __commonJS({
-  ".yarn/cache/socks-proxy-agent-npm-8.0.1-646f00d0a1-6df7fae19f.zip/node_modules/socks-proxy-agent/dist/index.js"(exports) {
+  ".yarn/cache/socks-proxy-agent-npm-8.0.1-646f00d0a1-3971e6af57.zip/node_modules/socks-proxy-agent/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -9040,9 +9069,9 @@ var require_dist4 = __commonJS({
   }
 });
 
-// .yarn/cache/data-uri-to-buffer-npm-5.0.1-a40e5ac026-ffb32d1944.zip/node_modules/data-uri-to-buffer/dist/index.js
+// .yarn/cache/data-uri-to-buffer-npm-5.0.1-a40e5ac026-08ad2f2cd5.zip/node_modules/data-uri-to-buffer/dist/index.js
 var require_dist5 = __commonJS({
-  ".yarn/cache/data-uri-to-buffer-npm-5.0.1-a40e5ac026-ffb32d1944.zip/node_modules/data-uri-to-buffer/dist/index.js"(exports) {
+  ".yarn/cache/data-uri-to-buffer-npm-5.0.1-a40e5ac026-08ad2f2cd5.zip/node_modules/data-uri-to-buffer/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.dataUriToBuffer = void 0;
@@ -9087,9 +9116,9 @@ var require_dist5 = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/notmodified.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/notmodified.js
 var require_notmodified = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/notmodified.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/notmodified.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NotModifiedError = class extends Error {
@@ -9102,9 +9131,9 @@ var require_notmodified = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/data.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/data.js
 var require_data = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/data.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/data.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -9143,9 +9172,9 @@ var require_data = __commonJS({
   }
 });
 
-// .yarn/cache/universalify-npm-0.1.2-9b22d31d2d-056559913f.zip/node_modules/universalify/index.js
+// .yarn/cache/universalify-npm-0.1.2-9b22d31d2d-e70e0339f6.zip/node_modules/universalify/index.js
 var require_universalify = __commonJS({
-  ".yarn/cache/universalify-npm-0.1.2-9b22d31d2d-056559913f.zip/node_modules/universalify/index.js"(exports) {
+  ".yarn/cache/universalify-npm-0.1.2-9b22d31d2d-e70e0339f6.zip/node_modules/universalify/index.js"(exports) {
     "use strict";
     exports.fromCallback = function(fn2) {
       return Object.defineProperty(function() {
@@ -9176,9 +9205,9 @@ var require_universalify = __commonJS({
   }
 });
 
-// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/polyfills.js
+// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/polyfills.js
 var require_polyfills = __commonJS({
-  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/polyfills.js"(exports, module2) {
+  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/polyfills.js"(exports, module2) {
     var constants = require("constants");
     var origCwd = process.cwd;
     var cwd = null;
@@ -9203,56 +9232,56 @@ var require_polyfills = __commonJS({
     }
     var chdir;
     module2.exports = patch;
-    function patch(fs6) {
+    function patch(fs8) {
       if (constants.hasOwnProperty("O_SYMLINK") && process.version.match(/^v0\.6\.[0-2]|^v0\.5\./)) {
-        patchLchmod(fs6);
+        patchLchmod(fs8);
       }
-      if (!fs6.lutimes) {
-        patchLutimes(fs6);
+      if (!fs8.lutimes) {
+        patchLutimes(fs8);
       }
-      fs6.chown = chownFix(fs6.chown);
-      fs6.fchown = chownFix(fs6.fchown);
-      fs6.lchown = chownFix(fs6.lchown);
-      fs6.chmod = chmodFix(fs6.chmod);
-      fs6.fchmod = chmodFix(fs6.fchmod);
-      fs6.lchmod = chmodFix(fs6.lchmod);
-      fs6.chownSync = chownFixSync(fs6.chownSync);
-      fs6.fchownSync = chownFixSync(fs6.fchownSync);
-      fs6.lchownSync = chownFixSync(fs6.lchownSync);
-      fs6.chmodSync = chmodFixSync(fs6.chmodSync);
-      fs6.fchmodSync = chmodFixSync(fs6.fchmodSync);
-      fs6.lchmodSync = chmodFixSync(fs6.lchmodSync);
-      fs6.stat = statFix(fs6.stat);
-      fs6.fstat = statFix(fs6.fstat);
-      fs6.lstat = statFix(fs6.lstat);
-      fs6.statSync = statFixSync(fs6.statSync);
-      fs6.fstatSync = statFixSync(fs6.fstatSync);
-      fs6.lstatSync = statFixSync(fs6.lstatSync);
-      if (fs6.chmod && !fs6.lchmod) {
-        fs6.lchmod = function(path8, mode, cb) {
+      fs8.chown = chownFix(fs8.chown);
+      fs8.fchown = chownFix(fs8.fchown);
+      fs8.lchown = chownFix(fs8.lchown);
+      fs8.chmod = chmodFix(fs8.chmod);
+      fs8.fchmod = chmodFix(fs8.fchmod);
+      fs8.lchmod = chmodFix(fs8.lchmod);
+      fs8.chownSync = chownFixSync(fs8.chownSync);
+      fs8.fchownSync = chownFixSync(fs8.fchownSync);
+      fs8.lchownSync = chownFixSync(fs8.lchownSync);
+      fs8.chmodSync = chmodFixSync(fs8.chmodSync);
+      fs8.fchmodSync = chmodFixSync(fs8.fchmodSync);
+      fs8.lchmodSync = chmodFixSync(fs8.lchmodSync);
+      fs8.stat = statFix(fs8.stat);
+      fs8.fstat = statFix(fs8.fstat);
+      fs8.lstat = statFix(fs8.lstat);
+      fs8.statSync = statFixSync(fs8.statSync);
+      fs8.fstatSync = statFixSync(fs8.fstatSync);
+      fs8.lstatSync = statFixSync(fs8.lstatSync);
+      if (fs8.chmod && !fs8.lchmod) {
+        fs8.lchmod = function(path10, mode, cb) {
           if (cb)
             process.nextTick(cb);
         };
-        fs6.lchmodSync = function() {
+        fs8.lchmodSync = function() {
         };
       }
-      if (fs6.chown && !fs6.lchown) {
-        fs6.lchown = function(path8, uid, gid, cb) {
+      if (fs8.chown && !fs8.lchown) {
+        fs8.lchown = function(path10, uid, gid, cb) {
           if (cb)
             process.nextTick(cb);
         };
-        fs6.lchownSync = function() {
+        fs8.lchownSync = function() {
         };
       }
       if (platform === "win32") {
-        fs6.rename = typeof fs6.rename !== "function" ? fs6.rename : function(fs$rename) {
+        fs8.rename = typeof fs8.rename !== "function" ? fs8.rename : function(fs$rename) {
           function rename(from, to, cb) {
             var start = Date.now();
             var backoff = 0;
             fs$rename(from, to, function CB(er) {
               if (er && (er.code === "EACCES" || er.code === "EPERM" || er.code === "EBUSY") && Date.now() - start < 6e4) {
                 setTimeout(function() {
-                  fs6.stat(to, function(stater, st) {
+                  fs8.stat(to, function(stater, st) {
                     if (stater && stater.code === "ENOENT")
                       fs$rename(from, to, CB);
                     else
@@ -9270,9 +9299,9 @@ var require_polyfills = __commonJS({
           if (Object.setPrototypeOf)
             Object.setPrototypeOf(rename, fs$rename);
           return rename;
-        }(fs6.rename);
+        }(fs8.rename);
       }
-      fs6.read = typeof fs6.read !== "function" ? fs6.read : function(fs$read) {
+      fs8.read = typeof fs8.read !== "function" ? fs8.read : function(fs$read) {
         function read(fd, buffer, offset, length, position, callback_) {
           var callback;
           if (callback_ && typeof callback_ === "function") {
@@ -9280,23 +9309,23 @@ var require_polyfills = __commonJS({
             callback = function(er, _, __) {
               if (er && er.code === "EAGAIN" && eagCounter < 10) {
                 eagCounter++;
-                return fs$read.call(fs6, fd, buffer, offset, length, position, callback);
+                return fs$read.call(fs8, fd, buffer, offset, length, position, callback);
               }
               callback_.apply(this, arguments);
             };
           }
-          return fs$read.call(fs6, fd, buffer, offset, length, position, callback);
+          return fs$read.call(fs8, fd, buffer, offset, length, position, callback);
         }
         if (Object.setPrototypeOf)
           Object.setPrototypeOf(read, fs$read);
         return read;
-      }(fs6.read);
-      fs6.readSync = typeof fs6.readSync !== "function" ? fs6.readSync : function(fs$readSync) {
+      }(fs8.read);
+      fs8.readSync = typeof fs8.readSync !== "function" ? fs8.readSync : function(fs$readSync) {
         return function(fd, buffer, offset, length, position) {
           var eagCounter = 0;
           while (true) {
             try {
-              return fs$readSync.call(fs6, fd, buffer, offset, length, position);
+              return fs$readSync.call(fs8, fd, buffer, offset, length, position);
             } catch (er) {
               if (er.code === "EAGAIN" && eagCounter < 10) {
                 eagCounter++;
@@ -9306,11 +9335,11 @@ var require_polyfills = __commonJS({
             }
           }
         };
-      }(fs6.readSync);
-      function patchLchmod(fs7) {
-        fs7.lchmod = function(path8, mode, callback) {
-          fs7.open(
-            path8,
+      }(fs8.readSync);
+      function patchLchmod(fs9) {
+        fs9.lchmod = function(path10, mode, callback) {
+          fs9.open(
+            path10,
             constants.O_WRONLY | constants.O_SYMLINK,
             mode,
             function(err, fd) {
@@ -9319,8 +9348,8 @@ var require_polyfills = __commonJS({
                   callback(err);
                 return;
               }
-              fs7.fchmod(fd, mode, function(err2) {
-                fs7.close(fd, function(err22) {
+              fs9.fchmod(fd, mode, function(err2) {
+                fs9.close(fd, function(err22) {
                   if (callback)
                     callback(err2 || err22);
                 });
@@ -9328,68 +9357,68 @@ var require_polyfills = __commonJS({
             }
           );
         };
-        fs7.lchmodSync = function(path8, mode) {
-          var fd = fs7.openSync(path8, constants.O_WRONLY | constants.O_SYMLINK, mode);
+        fs9.lchmodSync = function(path10, mode) {
+          var fd = fs9.openSync(path10, constants.O_WRONLY | constants.O_SYMLINK, mode);
           var threw = true;
           var ret;
           try {
-            ret = fs7.fchmodSync(fd, mode);
+            ret = fs9.fchmodSync(fd, mode);
             threw = false;
           } finally {
             if (threw) {
               try {
-                fs7.closeSync(fd);
+                fs9.closeSync(fd);
               } catch (er) {
               }
             } else {
-              fs7.closeSync(fd);
+              fs9.closeSync(fd);
             }
           }
           return ret;
         };
       }
-      function patchLutimes(fs7) {
-        if (constants.hasOwnProperty("O_SYMLINK") && fs7.futimes) {
-          fs7.lutimes = function(path8, at, mt, cb) {
-            fs7.open(path8, constants.O_SYMLINK, function(er, fd) {
+      function patchLutimes(fs9) {
+        if (constants.hasOwnProperty("O_SYMLINK") && fs9.futimes) {
+          fs9.lutimes = function(path10, at, mt, cb) {
+            fs9.open(path10, constants.O_SYMLINK, function(er, fd) {
               if (er) {
                 if (cb)
                   cb(er);
                 return;
               }
-              fs7.futimes(fd, at, mt, function(er2) {
-                fs7.close(fd, function(er22) {
+              fs9.futimes(fd, at, mt, function(er2) {
+                fs9.close(fd, function(er22) {
                   if (cb)
                     cb(er2 || er22);
                 });
               });
             });
           };
-          fs7.lutimesSync = function(path8, at, mt) {
-            var fd = fs7.openSync(path8, constants.O_SYMLINK);
+          fs9.lutimesSync = function(path10, at, mt) {
+            var fd = fs9.openSync(path10, constants.O_SYMLINK);
             var ret;
             var threw = true;
             try {
-              ret = fs7.futimesSync(fd, at, mt);
+              ret = fs9.futimesSync(fd, at, mt);
               threw = false;
             } finally {
               if (threw) {
                 try {
-                  fs7.closeSync(fd);
+                  fs9.closeSync(fd);
                 } catch (er) {
                 }
               } else {
-                fs7.closeSync(fd);
+                fs9.closeSync(fd);
               }
             }
             return ret;
           };
-        } else if (fs7.futimes) {
-          fs7.lutimes = function(_a, _b, _c, cb) {
+        } else if (fs9.futimes) {
+          fs9.lutimes = function(_a, _b, _c, cb) {
             if (cb)
               process.nextTick(cb);
           };
-          fs7.lutimesSync = function() {
+          fs9.lutimesSync = function() {
           };
         }
       }
@@ -9397,7 +9426,7 @@ var require_polyfills = __commonJS({
         if (!orig)
           return orig;
         return function(target, mode, cb) {
-          return orig.call(fs6, target, mode, function(er) {
+          return orig.call(fs8, target, mode, function(er) {
             if (chownErOk(er))
               er = null;
             if (cb)
@@ -9410,7 +9439,7 @@ var require_polyfills = __commonJS({
           return orig;
         return function(target, mode) {
           try {
-            return orig.call(fs6, target, mode);
+            return orig.call(fs8, target, mode);
           } catch (er) {
             if (!chownErOk(er))
               throw er;
@@ -9421,7 +9450,7 @@ var require_polyfills = __commonJS({
         if (!orig)
           return orig;
         return function(target, uid, gid, cb) {
-          return orig.call(fs6, target, uid, gid, function(er) {
+          return orig.call(fs8, target, uid, gid, function(er) {
             if (chownErOk(er))
               er = null;
             if (cb)
@@ -9434,7 +9463,7 @@ var require_polyfills = __commonJS({
           return orig;
         return function(target, uid, gid) {
           try {
-            return orig.call(fs6, target, uid, gid);
+            return orig.call(fs8, target, uid, gid);
           } catch (er) {
             if (!chownErOk(er))
               throw er;
@@ -9459,14 +9488,14 @@ var require_polyfills = __commonJS({
             if (cb)
               cb.apply(this, arguments);
           }
-          return options ? orig.call(fs6, target, options, callback) : orig.call(fs6, target, callback);
+          return options ? orig.call(fs8, target, options, callback) : orig.call(fs8, target, callback);
         };
       }
       function statFixSync(orig) {
         if (!orig)
           return orig;
         return function(target, options) {
-          var stats = options ? orig.call(fs6, target, options) : orig.call(fs6, target);
+          var stats = options ? orig.call(fs8, target, options) : orig.call(fs8, target);
           if (stats) {
             if (stats.uid < 0)
               stats.uid += 4294967296;
@@ -9492,22 +9521,22 @@ var require_polyfills = __commonJS({
   }
 });
 
-// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/legacy-streams.js
+// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/legacy-streams.js
 var require_legacy_streams = __commonJS({
-  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/legacy-streams.js"(exports, module2) {
+  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/legacy-streams.js"(exports, module2) {
     var Stream = require("stream").Stream;
     module2.exports = legacy;
-    function legacy(fs6) {
+    function legacy(fs8) {
       return {
         ReadStream,
         WriteStream
       };
-      function ReadStream(path8, options) {
+      function ReadStream(path10, options) {
         if (!(this instanceof ReadStream))
-          return new ReadStream(path8, options);
+          return new ReadStream(path10, options);
         Stream.call(this);
         var self2 = this;
-        this.path = path8;
+        this.path = path10;
         this.fd = null;
         this.readable = true;
         this.paused = false;
@@ -9542,7 +9571,7 @@ var require_legacy_streams = __commonJS({
           });
           return;
         }
-        fs6.open(this.path, this.flags, this.mode, function(err, fd) {
+        fs8.open(this.path, this.flags, this.mode, function(err, fd) {
           if (err) {
             self2.emit("error", err);
             self2.readable = false;
@@ -9553,11 +9582,11 @@ var require_legacy_streams = __commonJS({
           self2._read();
         });
       }
-      function WriteStream(path8, options) {
+      function WriteStream(path10, options) {
         if (!(this instanceof WriteStream))
-          return new WriteStream(path8, options);
+          return new WriteStream(path10, options);
         Stream.call(this);
-        this.path = path8;
+        this.path = path10;
         this.fd = null;
         this.writable = true;
         this.flags = "w";
@@ -9582,7 +9611,7 @@ var require_legacy_streams = __commonJS({
         this.busy = false;
         this._queue = [];
         if (this.fd === null) {
-          this._open = fs6.open;
+          this._open = fs8.open;
           this._queue.push([this._open, this.path, this.flags, this.mode, void 0]);
           this.flush();
         }
@@ -9591,9 +9620,9 @@ var require_legacy_streams = __commonJS({
   }
 });
 
-// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/clone.js
+// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/clone.js
 var require_clone = __commonJS({
-  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/clone.js"(exports, module2) {
+  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/clone.js"(exports, module2) {
     "use strict";
     module2.exports = clone;
     var getPrototypeOf = Object.getPrototypeOf || function(obj) {
@@ -9614,10 +9643,10 @@ var require_clone = __commonJS({
   }
 });
 
-// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/graceful-fs.js
+// .yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/graceful-fs.js
 var require_graceful_fs = __commonJS({
-  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-0228fc1080.zip/node_modules/graceful-fs/graceful-fs.js"(exports, module2) {
-    var fs6 = require("fs");
+  ".yarn/cache/graceful-fs-npm-4.2.11-24bb648a68-386d011a55.zip/node_modules/graceful-fs/graceful-fs.js"(exports, module2) {
+    var fs8 = require("fs");
     var polyfills = require_polyfills();
     var legacy = require_legacy_streams();
     var clone = require_clone();
@@ -9649,12 +9678,12 @@ var require_graceful_fs = __commonJS({
         m = "GFS4: " + m.split(/\n/).join("\nGFS4: ");
         console.error(m);
       };
-    if (!fs6[gracefulQueue]) {
+    if (!fs8[gracefulQueue]) {
       queue = global[gracefulQueue] || [];
-      publishQueue(fs6, queue);
-      fs6.close = function(fs$close) {
+      publishQueue(fs8, queue);
+      fs8.close = function(fs$close) {
         function close(fd, cb) {
-          return fs$close.call(fs6, fd, function(err) {
+          return fs$close.call(fs8, fd, function(err) {
             if (!err) {
               resetQueue();
             }
@@ -9666,48 +9695,48 @@ var require_graceful_fs = __commonJS({
           value: fs$close
         });
         return close;
-      }(fs6.close);
-      fs6.closeSync = function(fs$closeSync) {
+      }(fs8.close);
+      fs8.closeSync = function(fs$closeSync) {
         function closeSync(fd) {
-          fs$closeSync.apply(fs6, arguments);
+          fs$closeSync.apply(fs8, arguments);
           resetQueue();
         }
         Object.defineProperty(closeSync, previousSymbol, {
           value: fs$closeSync
         });
         return closeSync;
-      }(fs6.closeSync);
+      }(fs8.closeSync);
       if (/\bgfs4\b/i.test(process.env.NODE_DEBUG || "")) {
         process.on("exit", function() {
-          debug2(fs6[gracefulQueue]);
-          require("assert").equal(fs6[gracefulQueue].length, 0);
+          debug2(fs8[gracefulQueue]);
+          require("assert").equal(fs8[gracefulQueue].length, 0);
         });
       }
     }
     var queue;
     if (!global[gracefulQueue]) {
-      publishQueue(global, fs6[gracefulQueue]);
+      publishQueue(global, fs8[gracefulQueue]);
     }
-    module2.exports = patch(clone(fs6));
-    if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs6.__patched) {
-      module2.exports = patch(fs6);
-      fs6.__patched = true;
+    module2.exports = patch(clone(fs8));
+    if (process.env.TEST_GRACEFUL_FS_GLOBAL_PATCH && !fs8.__patched) {
+      module2.exports = patch(fs8);
+      fs8.__patched = true;
     }
-    function patch(fs7) {
-      polyfills(fs7);
-      fs7.gracefulify = patch;
-      fs7.createReadStream = createReadStream;
-      fs7.createWriteStream = createWriteStream;
-      var fs$readFile = fs7.readFile;
-      fs7.readFile = readFile;
-      function readFile(path8, options, cb) {
+    function patch(fs9) {
+      polyfills(fs9);
+      fs9.gracefulify = patch;
+      fs9.createReadStream = createReadStream;
+      fs9.createWriteStream = createWriteStream;
+      var fs$readFile = fs9.readFile;
+      fs9.readFile = readFile;
+      function readFile(path10, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        return go$readFile(path8, options, cb);
-        function go$readFile(path9, options2, cb2, startTime) {
-          return fs$readFile(path9, options2, function(err) {
+        return go$readFile(path10, options, cb);
+        function go$readFile(path11, options2, cb2, startTime) {
+          return fs$readFile(path11, options2, function(err) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$readFile, [path9, options2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$readFile, [path11, options2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -9715,16 +9744,16 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$writeFile = fs7.writeFile;
-      fs7.writeFile = writeFile;
-      function writeFile(path8, data, options, cb) {
+      var fs$writeFile = fs9.writeFile;
+      fs9.writeFile = writeFile;
+      function writeFile(path10, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        return go$writeFile(path8, data, options, cb);
-        function go$writeFile(path9, data2, options2, cb2, startTime) {
-          return fs$writeFile(path9, data2, options2, function(err) {
+        return go$writeFile(path10, data, options, cb);
+        function go$writeFile(path11, data2, options2, cb2, startTime) {
+          return fs$writeFile(path11, data2, options2, function(err) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$writeFile, [path9, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$writeFile, [path11, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -9732,17 +9761,17 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$appendFile = fs7.appendFile;
+      var fs$appendFile = fs9.appendFile;
       if (fs$appendFile)
-        fs7.appendFile = appendFile;
-      function appendFile(path8, data, options, cb) {
+        fs9.appendFile = appendFile;
+      function appendFile(path10, data, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        return go$appendFile(path8, data, options, cb);
-        function go$appendFile(path9, data2, options2, cb2, startTime) {
-          return fs$appendFile(path9, data2, options2, function(err) {
+        return go$appendFile(path10, data, options, cb);
+        function go$appendFile(path11, data2, options2, cb2, startTime) {
+          return fs$appendFile(path11, data2, options2, function(err) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$appendFile, [path9, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$appendFile, [path11, data2, options2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -9750,9 +9779,9 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$copyFile = fs7.copyFile;
+      var fs$copyFile = fs9.copyFile;
       if (fs$copyFile)
-        fs7.copyFile = copyFile;
+        fs9.copyFile = copyFile;
       function copyFile(src, dest, flags, cb) {
         if (typeof flags === "function") {
           cb = flags;
@@ -9770,34 +9799,34 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      var fs$readdir = fs7.readdir;
-      fs7.readdir = readdir;
+      var fs$readdir = fs9.readdir;
+      fs9.readdir = readdir;
       var noReaddirOptionVersions = /^v[0-5]\./;
-      function readdir(path8, options, cb) {
+      function readdir(path10, options, cb) {
         if (typeof options === "function")
           cb = options, options = null;
-        var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path9, options2, cb2, startTime) {
-          return fs$readdir(path9, fs$readdirCallback(
-            path9,
+        var go$readdir = noReaddirOptionVersions.test(process.version) ? function go$readdir2(path11, options2, cb2, startTime) {
+          return fs$readdir(path11, fs$readdirCallback(
+            path11,
             options2,
             cb2,
             startTime
           ));
-        } : function go$readdir2(path9, options2, cb2, startTime) {
-          return fs$readdir(path9, options2, fs$readdirCallback(
-            path9,
+        } : function go$readdir2(path11, options2, cb2, startTime) {
+          return fs$readdir(path11, options2, fs$readdirCallback(
+            path11,
             options2,
             cb2,
             startTime
           ));
         };
-        return go$readdir(path8, options, cb);
-        function fs$readdirCallback(path9, options2, cb2, startTime) {
+        return go$readdir(path10, options, cb);
+        function fs$readdirCallback(path11, options2, cb2, startTime) {
           return function(err, files) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
               enqueue([
                 go$readdir,
-                [path9, options2, cb2],
+                [path11, options2, cb2],
                 err,
                 startTime || Date.now(),
                 Date.now()
@@ -9812,21 +9841,21 @@ var require_graceful_fs = __commonJS({
         }
       }
       if (process.version.substr(0, 4) === "v0.8") {
-        var legStreams = legacy(fs7);
+        var legStreams = legacy(fs9);
         ReadStream = legStreams.ReadStream;
         WriteStream = legStreams.WriteStream;
       }
-      var fs$ReadStream = fs7.ReadStream;
+      var fs$ReadStream = fs9.ReadStream;
       if (fs$ReadStream) {
         ReadStream.prototype = Object.create(fs$ReadStream.prototype);
         ReadStream.prototype.open = ReadStream$open;
       }
-      var fs$WriteStream = fs7.WriteStream;
+      var fs$WriteStream = fs9.WriteStream;
       if (fs$WriteStream) {
         WriteStream.prototype = Object.create(fs$WriteStream.prototype);
         WriteStream.prototype.open = WriteStream$open;
       }
-      Object.defineProperty(fs7, "ReadStream", {
+      Object.defineProperty(fs9, "ReadStream", {
         get: function() {
           return ReadStream;
         },
@@ -9836,7 +9865,7 @@ var require_graceful_fs = __commonJS({
         enumerable: true,
         configurable: true
       });
-      Object.defineProperty(fs7, "WriteStream", {
+      Object.defineProperty(fs9, "WriteStream", {
         get: function() {
           return WriteStream;
         },
@@ -9847,7 +9876,7 @@ var require_graceful_fs = __commonJS({
         configurable: true
       });
       var FileReadStream = ReadStream;
-      Object.defineProperty(fs7, "FileReadStream", {
+      Object.defineProperty(fs9, "FileReadStream", {
         get: function() {
           return FileReadStream;
         },
@@ -9858,7 +9887,7 @@ var require_graceful_fs = __commonJS({
         configurable: true
       });
       var FileWriteStream = WriteStream;
-      Object.defineProperty(fs7, "FileWriteStream", {
+      Object.defineProperty(fs9, "FileWriteStream", {
         get: function() {
           return FileWriteStream;
         },
@@ -9868,7 +9897,7 @@ var require_graceful_fs = __commonJS({
         enumerable: true,
         configurable: true
       });
-      function ReadStream(path8, options) {
+      function ReadStream(path10, options) {
         if (this instanceof ReadStream)
           return fs$ReadStream.apply(this, arguments), this;
         else
@@ -9888,7 +9917,7 @@ var require_graceful_fs = __commonJS({
           }
         });
       }
-      function WriteStream(path8, options) {
+      function WriteStream(path10, options) {
         if (this instanceof WriteStream)
           return fs$WriteStream.apply(this, arguments), this;
         else
@@ -9906,22 +9935,22 @@ var require_graceful_fs = __commonJS({
           }
         });
       }
-      function createReadStream(path8, options) {
-        return new fs7.ReadStream(path8, options);
+      function createReadStream(path10, options) {
+        return new fs9.ReadStream(path10, options);
       }
-      function createWriteStream(path8, options) {
-        return new fs7.WriteStream(path8, options);
+      function createWriteStream(path10, options) {
+        return new fs9.WriteStream(path10, options);
       }
-      var fs$open = fs7.open;
-      fs7.open = open;
-      function open(path8, flags, mode, cb) {
+      var fs$open = fs9.open;
+      fs9.open = open;
+      function open(path10, flags, mode, cb) {
         if (typeof mode === "function")
           cb = mode, mode = null;
-        return go$open(path8, flags, mode, cb);
-        function go$open(path9, flags2, mode2, cb2, startTime) {
-          return fs$open(path9, flags2, mode2, function(err, fd) {
+        return go$open(path10, flags, mode, cb);
+        function go$open(path11, flags2, mode2, cb2, startTime) {
+          return fs$open(path11, flags2, mode2, function(err, fd) {
             if (err && (err.code === "EMFILE" || err.code === "ENFILE"))
-              enqueue([go$open, [path9, flags2, mode2, cb2], err, startTime || Date.now(), Date.now()]);
+              enqueue([go$open, [path11, flags2, mode2, cb2], err, startTime || Date.now(), Date.now()]);
             else {
               if (typeof cb2 === "function")
                 cb2.apply(this, arguments);
@@ -9929,20 +9958,20 @@ var require_graceful_fs = __commonJS({
           });
         }
       }
-      return fs7;
+      return fs9;
     }
     function enqueue(elem) {
       debug2("ENQUEUE", elem[0].name, elem[1]);
-      fs6[gracefulQueue].push(elem);
+      fs8[gracefulQueue].push(elem);
       retry();
     }
     var retryTimer;
     function resetQueue() {
       var now = Date.now();
-      for (var i = 0; i < fs6[gracefulQueue].length; ++i) {
-        if (fs6[gracefulQueue][i].length > 2) {
-          fs6[gracefulQueue][i][3] = now;
-          fs6[gracefulQueue][i][4] = now;
+      for (var i = 0; i < fs8[gracefulQueue].length; ++i) {
+        if (fs8[gracefulQueue][i].length > 2) {
+          fs8[gracefulQueue][i][3] = now;
+          fs8[gracefulQueue][i][4] = now;
         }
       }
       retry();
@@ -9950,9 +9979,9 @@ var require_graceful_fs = __commonJS({
     function retry() {
       clearTimeout(retryTimer);
       retryTimer = void 0;
-      if (fs6[gracefulQueue].length === 0)
+      if (fs8[gracefulQueue].length === 0)
         return;
-      var elem = fs6[gracefulQueue].shift();
+      var elem = fs8[gracefulQueue].shift();
       var fn2 = elem[0];
       var args = elem[1];
       var err = elem[2];
@@ -9974,7 +10003,7 @@ var require_graceful_fs = __commonJS({
           debug2("RETRY", fn2.name, args);
           fn2.apply(null, args.concat([startTime]));
         } else {
-          fs6[gracefulQueue].push(elem);
+          fs8[gracefulQueue].push(elem);
         }
       }
       if (retryTimer === void 0) {
@@ -9984,12 +10013,12 @@ var require_graceful_fs = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/fs/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/fs/index.js
 var require_fs = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/fs/index.js"(exports) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/fs/index.js"(exports) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var fs6 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     var api = [
       "access",
       "appendFile",
@@ -10024,31 +10053,31 @@ var require_fs = __commonJS({
       "utimes",
       "writeFile"
     ].filter((key) => {
-      return typeof fs6[key] === "function";
+      return typeof fs8[key] === "function";
     });
-    Object.keys(fs6).forEach((key) => {
+    Object.keys(fs8).forEach((key) => {
       if (key === "promises") {
         return;
       }
-      exports[key] = fs6[key];
+      exports[key] = fs8[key];
     });
     api.forEach((method) => {
-      exports[method] = u(fs6[method]);
+      exports[method] = u(fs8[method]);
     });
     exports.exists = function(filename, callback) {
       if (typeof callback === "function") {
-        return fs6.exists(filename, callback);
+        return fs8.exists(filename, callback);
       }
       return new Promise((resolve) => {
-        return fs6.exists(filename, resolve);
+        return fs8.exists(filename, resolve);
       });
     };
     exports.read = function(fd, buffer, offset, length, position, callback) {
       if (typeof callback === "function") {
-        return fs6.read(fd, buffer, offset, length, position, callback);
+        return fs8.read(fd, buffer, offset, length, position, callback);
       }
       return new Promise((resolve, reject) => {
-        fs6.read(fd, buffer, offset, length, position, (err, bytesRead, buffer2) => {
+        fs8.read(fd, buffer, offset, length, position, (err, bytesRead, buffer2) => {
           if (err)
             return reject(err);
           resolve({ bytesRead, buffer: buffer2 });
@@ -10057,29 +10086,29 @@ var require_fs = __commonJS({
     };
     exports.write = function(fd, buffer, ...args) {
       if (typeof args[args.length - 1] === "function") {
-        return fs6.write(fd, buffer, ...args);
+        return fs8.write(fd, buffer, ...args);
       }
       return new Promise((resolve, reject) => {
-        fs6.write(fd, buffer, ...args, (err, bytesWritten, buffer2) => {
+        fs8.write(fd, buffer, ...args, (err, bytesWritten, buffer2) => {
           if (err)
             return reject(err);
           resolve({ bytesWritten, buffer: buffer2 });
         });
       });
     };
-    if (typeof fs6.realpath.native === "function") {
-      exports.realpath.native = u(fs6.realpath.native);
+    if (typeof fs8.realpath.native === "function") {
+      exports.realpath.native = u(fs8.realpath.native);
     }
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/win32.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/win32.js
 var require_win32 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/win32.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/win32.js"(exports, module2) {
     "use strict";
-    var path8 = require("path");
+    var path10 = require("path");
     function getRootPath(p) {
-      p = path8.normalize(path8.resolve(p)).split(path8.sep);
+      p = path10.normalize(path10.resolve(p)).split(path10.sep);
       if (p.length > 0)
         return p[0];
       return null;
@@ -10097,12 +10126,12 @@ var require_win32 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs.js
 var require_mkdirs = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var invalidWin32Path = require_win32().invalidWin32Path;
     var o777 = parseInt("0777", 8);
     function mkdirs(p, opts, callback, made) {
@@ -10118,7 +10147,7 @@ var require_mkdirs = __commonJS({
         return callback(errInval);
       }
       let mode = opts.mode;
-      const xfs = opts.fs || fs6;
+      const xfs = opts.fs || fs8;
       if (mode === void 0) {
         mode = o777 & ~process.umask();
       }
@@ -10126,7 +10155,7 @@ var require_mkdirs = __commonJS({
         made = null;
       callback = callback || function() {
       };
-      p = path8.resolve(p);
+      p = path10.resolve(p);
       xfs.mkdir(p, mode, (er) => {
         if (!er) {
           made = made || p;
@@ -10134,9 +10163,9 @@ var require_mkdirs = __commonJS({
         }
         switch (er.code) {
           case "ENOENT":
-            if (path8.dirname(p) === p)
+            if (path10.dirname(p) === p)
               return callback(er);
-            mkdirs(path8.dirname(p), opts, (er2, made2) => {
+            mkdirs(path10.dirname(p), opts, (er2, made2) => {
               if (er2)
                 callback(er2, made2);
               else
@@ -10158,12 +10187,12 @@ var require_mkdirs = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs-sync.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs-sync.js
 var require_mkdirs_sync = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs-sync.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/mkdirs-sync.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var invalidWin32Path = require_win32().invalidWin32Path;
     var o777 = parseInt("0777", 8);
     function mkdirsSync(p, opts, made) {
@@ -10171,7 +10200,7 @@ var require_mkdirs_sync = __commonJS({
         opts = { mode: opts };
       }
       let mode = opts.mode;
-      const xfs = opts.fs || fs6;
+      const xfs = opts.fs || fs8;
       if (process.platform === "win32" && invalidWin32Path(p)) {
         const errInval = new Error(p + " contains invalid WIN32 path characters.");
         errInval.code = "EINVAL";
@@ -10182,15 +10211,15 @@ var require_mkdirs_sync = __commonJS({
       }
       if (!made)
         made = null;
-      p = path8.resolve(p);
+      p = path10.resolve(p);
       try {
         xfs.mkdirSync(p, mode);
         made = made || p;
       } catch (err0) {
         if (err0.code === "ENOENT") {
-          if (path8.dirname(p) === p)
+          if (path10.dirname(p) === p)
             throw err0;
-          made = mkdirsSync(path8.dirname(p), opts, made);
+          made = mkdirsSync(path10.dirname(p), opts, made);
           mkdirsSync(p, opts, made);
         } else {
           let stat;
@@ -10209,9 +10238,9 @@ var require_mkdirs_sync = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/index.js
 var require_mkdirs2 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/mkdirs/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/mkdirs/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
     var mkdirs = u(require_mkdirs());
@@ -10228,40 +10257,40 @@ var require_mkdirs2 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/util/utimes.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/util/utimes.js
 var require_utimes = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/util/utimes.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/util/utimes.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var os2 = require("os");
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var os3 = require("os");
+    var path10 = require("path");
     function hasMillisResSync() {
-      let tmpfile = path8.join("millis-test-sync" + Date.now().toString() + Math.random().toString().slice(2));
-      tmpfile = path8.join(os2.tmpdir(), tmpfile);
+      let tmpfile = path10.join("millis-test-sync" + Date.now().toString() + Math.random().toString().slice(2));
+      tmpfile = path10.join(os3.tmpdir(), tmpfile);
       const d = /* @__PURE__ */ new Date(1435410243862);
-      fs6.writeFileSync(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141");
-      const fd = fs6.openSync(tmpfile, "r+");
-      fs6.futimesSync(fd, d, d);
-      fs6.closeSync(fd);
-      return fs6.statSync(tmpfile).mtime > 1435410243e3;
+      fs8.writeFileSync(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141");
+      const fd = fs8.openSync(tmpfile, "r+");
+      fs8.futimesSync(fd, d, d);
+      fs8.closeSync(fd);
+      return fs8.statSync(tmpfile).mtime > 1435410243e3;
     }
     function hasMillisRes(callback) {
-      let tmpfile = path8.join("millis-test" + Date.now().toString() + Math.random().toString().slice(2));
-      tmpfile = path8.join(os2.tmpdir(), tmpfile);
+      let tmpfile = path10.join("millis-test" + Date.now().toString() + Math.random().toString().slice(2));
+      tmpfile = path10.join(os3.tmpdir(), tmpfile);
       const d = /* @__PURE__ */ new Date(1435410243862);
-      fs6.writeFile(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141", (err) => {
+      fs8.writeFile(tmpfile, "https://github.com/jprichardson/node-fs-extra/pull/141", (err) => {
         if (err)
           return callback(err);
-        fs6.open(tmpfile, "r+", (err2, fd) => {
+        fs8.open(tmpfile, "r+", (err2, fd) => {
           if (err2)
             return callback(err2);
-          fs6.futimes(fd, d, d, (err3) => {
+          fs8.futimes(fd, d, d, (err3) => {
             if (err3)
               return callback(err3);
-            fs6.close(fd, (err4) => {
+            fs8.close(fd, (err4) => {
               if (err4)
                 return callback(err4);
-              fs6.stat(tmpfile, (err5, stats) => {
+              fs8.stat(tmpfile, (err5, stats) => {
                 if (err5)
                   return callback(err5);
                 callback(null, stats.mtime > 1435410243e3);
@@ -10280,22 +10309,22 @@ var require_utimes = __commonJS({
         throw new Error("fs-extra: timeRemoveMillis() unknown parameter type");
       }
     }
-    function utimesMillis(path9, atime, mtime, callback) {
-      fs6.open(path9, "r+", (err, fd) => {
+    function utimesMillis(path11, atime, mtime, callback) {
+      fs8.open(path11, "r+", (err, fd) => {
         if (err)
           return callback(err);
-        fs6.futimes(fd, atime, mtime, (futimesErr) => {
-          fs6.close(fd, (closeErr) => {
+        fs8.futimes(fd, atime, mtime, (futimesErr) => {
+          fs8.close(fd, (closeErr) => {
             if (callback)
               callback(futimesErr || closeErr);
           });
         });
       });
     }
-    function utimesMillisSync(path9, atime, mtime) {
-      const fd = fs6.openSync(path9, "r+");
-      fs6.futimesSync(fd, atime, mtime);
-      return fs6.closeSync(fd);
+    function utimesMillisSync(path11, atime, mtime) {
+      const fd = fs8.openSync(path11, "r+");
+      fs8.futimesSync(fd, atime, mtime);
+      return fs8.closeSync(fd);
     }
     module2.exports = {
       hasMillisRes,
@@ -10307,12 +10336,12 @@ var require_utimes = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/util/stat.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/util/stat.js
 var require_stat = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/util/stat.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/util/stat.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var NODE_VERSION_MAJOR_WITH_BIGINT = 10;
     var NODE_VERSION_MINOR_WITH_BIGINT = 5;
     var NODE_VERSION_PATCH_WITH_BIGINT = 0;
@@ -10336,10 +10365,10 @@ var require_stat = __commonJS({
     }
     function getStats(src, dest, cb) {
       if (nodeSupportsBigInt()) {
-        fs6.stat(src, { bigint: true }, (err, srcStat) => {
+        fs8.stat(src, { bigint: true }, (err, srcStat) => {
           if (err)
             return cb(err);
-          fs6.stat(dest, { bigint: true }, (err2, destStat) => {
+          fs8.stat(dest, { bigint: true }, (err2, destStat) => {
             if (err2) {
               if (err2.code === "ENOENT")
                 return cb(null, { srcStat, destStat: null });
@@ -10349,10 +10378,10 @@ var require_stat = __commonJS({
           });
         });
       } else {
-        fs6.stat(src, (err, srcStat) => {
+        fs8.stat(src, (err, srcStat) => {
           if (err)
             return cb(err);
-          fs6.stat(dest, (err2, destStat) => {
+          fs8.stat(dest, (err2, destStat) => {
             if (err2) {
               if (err2.code === "ENOENT")
                 return cb(null, { srcStat, destStat: null });
@@ -10366,15 +10395,15 @@ var require_stat = __commonJS({
     function getStatsSync(src, dest) {
       let srcStat, destStat;
       if (nodeSupportsBigInt()) {
-        srcStat = fs6.statSync(src, { bigint: true });
+        srcStat = fs8.statSync(src, { bigint: true });
       } else {
-        srcStat = fs6.statSync(src);
+        srcStat = fs8.statSync(src);
       }
       try {
         if (nodeSupportsBigInt()) {
-          destStat = fs6.statSync(dest, { bigint: true });
+          destStat = fs8.statSync(dest, { bigint: true });
         } else {
-          destStat = fs6.statSync(dest);
+          destStat = fs8.statSync(dest);
         }
       } catch (err) {
         if (err.code === "ENOENT")
@@ -10408,12 +10437,12 @@ var require_stat = __commonJS({
       return { srcStat, destStat };
     }
     function checkParentPaths(src, srcStat, dest, funcName, cb) {
-      const srcParent = path8.resolve(path8.dirname(src));
-      const destParent = path8.resolve(path8.dirname(dest));
-      if (destParent === srcParent || destParent === path8.parse(destParent).root)
+      const srcParent = path10.resolve(path10.dirname(src));
+      const destParent = path10.resolve(path10.dirname(dest));
+      if (destParent === srcParent || destParent === path10.parse(destParent).root)
         return cb();
       if (nodeSupportsBigInt()) {
-        fs6.stat(destParent, { bigint: true }, (err, destStat) => {
+        fs8.stat(destParent, { bigint: true }, (err, destStat) => {
           if (err) {
             if (err.code === "ENOENT")
               return cb();
@@ -10425,7 +10454,7 @@ var require_stat = __commonJS({
           return checkParentPaths(src, srcStat, destParent, funcName, cb);
         });
       } else {
-        fs6.stat(destParent, (err, destStat) => {
+        fs8.stat(destParent, (err, destStat) => {
           if (err) {
             if (err.code === "ENOENT")
               return cb();
@@ -10439,16 +10468,16 @@ var require_stat = __commonJS({
       }
     }
     function checkParentPathsSync(src, srcStat, dest, funcName) {
-      const srcParent = path8.resolve(path8.dirname(src));
-      const destParent = path8.resolve(path8.dirname(dest));
-      if (destParent === srcParent || destParent === path8.parse(destParent).root)
+      const srcParent = path10.resolve(path10.dirname(src));
+      const destParent = path10.resolve(path10.dirname(dest));
+      if (destParent === srcParent || destParent === path10.parse(destParent).root)
         return;
       let destStat;
       try {
         if (nodeSupportsBigInt()) {
-          destStat = fs6.statSync(destParent, { bigint: true });
+          destStat = fs8.statSync(destParent, { bigint: true });
         } else {
-          destStat = fs6.statSync(destParent);
+          destStat = fs8.statSync(destParent);
         }
       } catch (err) {
         if (err.code === "ENOENT")
@@ -10461,8 +10490,8 @@ var require_stat = __commonJS({
       return checkParentPathsSync(src, srcStat, destParent, funcName);
     }
     function isSrcSubdir(src, dest) {
-      const srcArr = path8.resolve(src).split(path8.sep).filter((i) => i);
-      const destArr = path8.resolve(dest).split(path8.sep).filter((i) => i);
+      const srcArr = path10.resolve(src).split(path10.sep).filter((i) => i);
+      const destArr = path10.resolve(dest).split(path10.sep).filter((i) => i);
       return srcArr.reduce((acc, cur, i) => acc && destArr[i] === cur, true);
     }
     function errMsg(src, dest, funcName) {
@@ -10478,9 +10507,9 @@ var require_stat = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/util/buffer.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/util/buffer.js
 var require_buffer = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/util/buffer.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/util/buffer.js"(exports, module2) {
     "use strict";
     module2.exports = function(size) {
       if (typeof Buffer.allocUnsafe === "function") {
@@ -10495,12 +10524,12 @@ var require_buffer = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy-sync/copy-sync.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy-sync/copy-sync.js
 var require_copy_sync = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy-sync/copy-sync.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy-sync/copy-sync.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var mkdirpSync = require_mkdirs2().mkdirsSync;
     var utimesSync = require_utimes().utimesMillisSync;
     var stat = require_stat();
@@ -10523,8 +10552,8 @@ var require_copy_sync = __commonJS({
     function handleFilterAndCopy(destStat, src, dest, opts) {
       if (opts.filter && !opts.filter(src, dest))
         return;
-      const destParent = path8.dirname(dest);
-      if (!fs6.existsSync(destParent))
+      const destParent = path10.dirname(dest);
+      if (!fs8.existsSync(destParent))
         mkdirpSync(destParent);
       return startCopy(destStat, src, dest, opts);
     }
@@ -10534,7 +10563,7 @@ var require_copy_sync = __commonJS({
       return getStats(destStat, src, dest, opts);
     }
     function getStats(destStat, src, dest, opts) {
-      const statSync = opts.dereference ? fs6.statSync : fs6.lstatSync;
+      const statSync = opts.dereference ? fs8.statSync : fs8.lstatSync;
       const srcStat = statSync(src);
       if (srcStat.isDirectory())
         return onDir(srcStat, destStat, src, dest, opts);
@@ -10550,16 +10579,16 @@ var require_copy_sync = __commonJS({
     }
     function mayCopyFile(srcStat, src, dest, opts) {
       if (opts.overwrite) {
-        fs6.unlinkSync(dest);
+        fs8.unlinkSync(dest);
         return copyFile(srcStat, src, dest, opts);
       } else if (opts.errorOnExist) {
         throw new Error(`'${dest}' already exists`);
       }
     }
     function copyFile(srcStat, src, dest, opts) {
-      if (typeof fs6.copyFileSync === "function") {
-        fs6.copyFileSync(src, dest);
-        fs6.chmodSync(dest, srcStat.mode);
+      if (typeof fs8.copyFileSync === "function") {
+        fs8.copyFileSync(src, dest);
+        fs8.chmodSync(dest, srcStat.mode);
         if (opts.preserveTimestamps) {
           return utimesSync(dest, srcStat.atime, srcStat.mtime);
         }
@@ -10570,18 +10599,18 @@ var require_copy_sync = __commonJS({
     function copyFileFallback(srcStat, src, dest, opts) {
       const BUF_LENGTH = 64 * 1024;
       const _buff = require_buffer()(BUF_LENGTH);
-      const fdr = fs6.openSync(src, "r");
-      const fdw = fs6.openSync(dest, "w", srcStat.mode);
+      const fdr = fs8.openSync(src, "r");
+      const fdw = fs8.openSync(dest, "w", srcStat.mode);
       let pos = 0;
       while (pos < srcStat.size) {
-        const bytesRead = fs6.readSync(fdr, _buff, 0, BUF_LENGTH, pos);
-        fs6.writeSync(fdw, _buff, 0, bytesRead);
+        const bytesRead = fs8.readSync(fdr, _buff, 0, BUF_LENGTH, pos);
+        fs8.writeSync(fdw, _buff, 0, bytesRead);
         pos += bytesRead;
       }
       if (opts.preserveTimestamps)
-        fs6.futimesSync(fdw, srcStat.atime, srcStat.mtime);
-      fs6.closeSync(fdr);
-      fs6.closeSync(fdw);
+        fs8.futimesSync(fdw, srcStat.atime, srcStat.mtime);
+      fs8.closeSync(fdr);
+      fs8.closeSync(fdw);
     }
     function onDir(srcStat, destStat, src, dest, opts) {
       if (!destStat)
@@ -10592,58 +10621,58 @@ var require_copy_sync = __commonJS({
       return copyDir(src, dest, opts);
     }
     function mkDirAndCopy(srcStat, src, dest, opts) {
-      fs6.mkdirSync(dest);
+      fs8.mkdirSync(dest);
       copyDir(src, dest, opts);
-      return fs6.chmodSync(dest, srcStat.mode);
+      return fs8.chmodSync(dest, srcStat.mode);
     }
     function copyDir(src, dest, opts) {
-      fs6.readdirSync(src).forEach((item) => copyDirItem(item, src, dest, opts));
+      fs8.readdirSync(src).forEach((item) => copyDirItem(item, src, dest, opts));
     }
     function copyDirItem(item, src, dest, opts) {
-      const srcItem = path8.join(src, item);
-      const destItem = path8.join(dest, item);
+      const srcItem = path10.join(src, item);
+      const destItem = path10.join(dest, item);
       const { destStat } = stat.checkPathsSync(srcItem, destItem, "copy");
       return startCopy(destStat, srcItem, destItem, opts);
     }
     function onLink(destStat, src, dest, opts) {
-      let resolvedSrc = fs6.readlinkSync(src);
+      let resolvedSrc = fs8.readlinkSync(src);
       if (opts.dereference) {
-        resolvedSrc = path8.resolve(process.cwd(), resolvedSrc);
+        resolvedSrc = path10.resolve(process.cwd(), resolvedSrc);
       }
       if (!destStat) {
-        return fs6.symlinkSync(resolvedSrc, dest);
+        return fs8.symlinkSync(resolvedSrc, dest);
       } else {
         let resolvedDest;
         try {
-          resolvedDest = fs6.readlinkSync(dest);
+          resolvedDest = fs8.readlinkSync(dest);
         } catch (err) {
           if (err.code === "EINVAL" || err.code === "UNKNOWN")
-            return fs6.symlinkSync(resolvedSrc, dest);
+            return fs8.symlinkSync(resolvedSrc, dest);
           throw err;
         }
         if (opts.dereference) {
-          resolvedDest = path8.resolve(process.cwd(), resolvedDest);
+          resolvedDest = path10.resolve(process.cwd(), resolvedDest);
         }
         if (stat.isSrcSubdir(resolvedSrc, resolvedDest)) {
           throw new Error(`Cannot copy '${resolvedSrc}' to a subdirectory of itself, '${resolvedDest}'.`);
         }
-        if (fs6.statSync(dest).isDirectory() && stat.isSrcSubdir(resolvedDest, resolvedSrc)) {
+        if (fs8.statSync(dest).isDirectory() && stat.isSrcSubdir(resolvedDest, resolvedSrc)) {
           throw new Error(`Cannot overwrite '${resolvedDest}' with '${resolvedSrc}'.`);
         }
         return copyLink(resolvedSrc, dest);
       }
     }
     function copyLink(resolvedSrc, dest) {
-      fs6.unlinkSync(dest);
-      return fs6.symlinkSync(resolvedSrc, dest);
+      fs8.unlinkSync(dest);
+      return fs8.symlinkSync(resolvedSrc, dest);
     }
     module2.exports = copySync;
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy-sync/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy-sync/index.js
 var require_copy_sync2 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy-sync/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy-sync/index.js"(exports, module2) {
     "use strict";
     module2.exports = {
       copySync: require_copy_sync()
@@ -10651,28 +10680,28 @@ var require_copy_sync2 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/path-exists/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/path-exists/index.js
 var require_path_exists = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/path-exists/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/path-exists/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromPromise;
-    var fs6 = require_fs();
-    function pathExists(path8) {
-      return fs6.access(path8).then(() => true).catch(() => false);
+    var fs8 = require_fs();
+    function pathExists(path10) {
+      return fs8.access(path10).then(() => true).catch(() => false);
     }
     module2.exports = {
       pathExists: u(pathExists),
-      pathExistsSync: fs6.existsSync
+      pathExistsSync: fs8.existsSync
     };
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy/copy.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy/copy.js
 var require_copy = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy/copy.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy/copy.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var mkdirp = require_mkdirs2().mkdirs;
     var pathExists = require_path_exists().pathExists;
     var utimes = require_utimes().utimesMillis;
@@ -10708,7 +10737,7 @@ var require_copy = __commonJS({
       });
     }
     function checkParentDir(destStat, src, dest, opts, cb) {
-      const destParent = path8.dirname(dest);
+      const destParent = path10.dirname(dest);
       pathExists(destParent, (err, dirExists) => {
         if (err)
           return cb(err);
@@ -10734,7 +10763,7 @@ var require_copy = __commonJS({
       return getStats(destStat, src, dest, opts, cb);
     }
     function getStats(destStat, src, dest, opts, cb) {
-      const stat2 = opts.dereference ? fs6.stat : fs6.lstat;
+      const stat2 = opts.dereference ? fs8.stat : fs8.lstat;
       stat2(src, (err, srcStat) => {
         if (err)
           return cb(err);
@@ -10753,7 +10782,7 @@ var require_copy = __commonJS({
     }
     function mayCopyFile(srcStat, src, dest, opts, cb) {
       if (opts.overwrite) {
-        fs6.unlink(dest, (err) => {
+        fs8.unlink(dest, (err) => {
           if (err)
             return cb(err);
           return copyFile(srcStat, src, dest, opts, cb);
@@ -10764,8 +10793,8 @@ var require_copy = __commonJS({
         return cb();
     }
     function copyFile(srcStat, src, dest, opts, cb) {
-      if (typeof fs6.copyFile === "function") {
-        return fs6.copyFile(src, dest, (err) => {
+      if (typeof fs8.copyFile === "function") {
+        return fs8.copyFile(src, dest, (err) => {
           if (err)
             return cb(err);
           return setDestModeAndTimestamps(srcStat, dest, opts, cb);
@@ -10774,14 +10803,14 @@ var require_copy = __commonJS({
       return copyFileFallback(srcStat, src, dest, opts, cb);
     }
     function copyFileFallback(srcStat, src, dest, opts, cb) {
-      const rs = fs6.createReadStream(src);
+      const rs = fs8.createReadStream(src);
       rs.on("error", (err) => cb(err)).once("open", () => {
-        const ws = fs6.createWriteStream(dest, { mode: srcStat.mode });
+        const ws = fs8.createWriteStream(dest, { mode: srcStat.mode });
         ws.on("error", (err) => cb(err)).on("open", () => rs.pipe(ws)).once("close", () => setDestModeAndTimestamps(srcStat, dest, opts, cb));
       });
     }
     function setDestModeAndTimestamps(srcStat, dest, opts, cb) {
-      fs6.chmod(dest, srcStat.mode, (err) => {
+      fs8.chmod(dest, srcStat.mode, (err) => {
         if (err)
           return cb(err);
         if (opts.preserveTimestamps) {
@@ -10799,18 +10828,18 @@ var require_copy = __commonJS({
       return copyDir(src, dest, opts, cb);
     }
     function mkDirAndCopy(srcStat, src, dest, opts, cb) {
-      fs6.mkdir(dest, (err) => {
+      fs8.mkdir(dest, (err) => {
         if (err)
           return cb(err);
         copyDir(src, dest, opts, (err2) => {
           if (err2)
             return cb(err2);
-          return fs6.chmod(dest, srcStat.mode, cb);
+          return fs8.chmod(dest, srcStat.mode, cb);
         });
       });
     }
     function copyDir(src, dest, opts, cb) {
-      fs6.readdir(src, (err, items) => {
+      fs8.readdir(src, (err, items) => {
         if (err)
           return cb(err);
         return copyDirItems(items, src, dest, opts, cb);
@@ -10823,8 +10852,8 @@ var require_copy = __commonJS({
       return copyDirItem(items, item, src, dest, opts, cb);
     }
     function copyDirItem(items, item, src, dest, opts, cb) {
-      const srcItem = path8.join(src, item);
-      const destItem = path8.join(dest, item);
+      const srcItem = path10.join(src, item);
+      const destItem = path10.join(dest, item);
       stat.checkPaths(srcItem, destItem, "copy", (err, stats) => {
         if (err)
           return cb(err);
@@ -10837,23 +10866,23 @@ var require_copy = __commonJS({
       });
     }
     function onLink(destStat, src, dest, opts, cb) {
-      fs6.readlink(src, (err, resolvedSrc) => {
+      fs8.readlink(src, (err, resolvedSrc) => {
         if (err)
           return cb(err);
         if (opts.dereference) {
-          resolvedSrc = path8.resolve(process.cwd(), resolvedSrc);
+          resolvedSrc = path10.resolve(process.cwd(), resolvedSrc);
         }
         if (!destStat) {
-          return fs6.symlink(resolvedSrc, dest, cb);
+          return fs8.symlink(resolvedSrc, dest, cb);
         } else {
-          fs6.readlink(dest, (err2, resolvedDest) => {
+          fs8.readlink(dest, (err2, resolvedDest) => {
             if (err2) {
               if (err2.code === "EINVAL" || err2.code === "UNKNOWN")
-                return fs6.symlink(resolvedSrc, dest, cb);
+                return fs8.symlink(resolvedSrc, dest, cb);
               return cb(err2);
             }
             if (opts.dereference) {
-              resolvedDest = path8.resolve(process.cwd(), resolvedDest);
+              resolvedDest = path10.resolve(process.cwd(), resolvedDest);
             }
             if (stat.isSrcSubdir(resolvedSrc, resolvedDest)) {
               return cb(new Error(`Cannot copy '${resolvedSrc}' to a subdirectory of itself, '${resolvedDest}'.`));
@@ -10867,19 +10896,19 @@ var require_copy = __commonJS({
       });
     }
     function copyLink(resolvedSrc, dest, cb) {
-      fs6.unlink(dest, (err) => {
+      fs8.unlink(dest, (err) => {
         if (err)
           return cb(err);
-        return fs6.symlink(resolvedSrc, dest, cb);
+        return fs8.symlink(resolvedSrc, dest, cb);
       });
     }
     module2.exports = copy;
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy/index.js
 var require_copy2 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/copy/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/copy/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
     module2.exports = {
@@ -10888,12 +10917,12 @@ var require_copy2 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/remove/rimraf.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/remove/rimraf.js
 var require_rimraf = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/remove/rimraf.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/remove/rimraf.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var assert2 = require("assert");
     var isWindows = process.platform === "win32";
     function defaults(options) {
@@ -10906,9 +10935,9 @@ var require_rimraf = __commonJS({
         "readdir"
       ];
       methods.forEach((m) => {
-        options[m] = options[m] || fs6[m];
+        options[m] = options[m] || fs8[m];
         m = m + "Sync";
-        options[m] = options[m] || fs6[m];
+        options[m] = options[m] || fs8[m];
       });
       options.maxBusyTries = options.maxBusyTries || 3;
     }
@@ -11050,7 +11079,7 @@ var require_rimraf = __commonJS({
         if (n === 0)
           return options.rmdir(p, cb);
         files.forEach((f) => {
-          rimraf2(path8.join(p, f), options, (er2) => {
+          rimraf2(path10.join(p, f), options, (er2) => {
             if (errState) {
               return;
             }
@@ -11119,7 +11148,7 @@ var require_rimraf = __commonJS({
     function rmkidsSync(p, options) {
       assert2(p);
       assert2(options);
-      options.readdirSync(p).forEach((f) => rimrafSync(path8.join(p, f), options));
+      options.readdirSync(p).forEach((f) => rimrafSync(path10.join(p, f), options));
       if (isWindows) {
         const startTime = Date.now();
         do {
@@ -11139,9 +11168,9 @@ var require_rimraf = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/remove/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/remove/index.js
 var require_remove = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/remove/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/remove/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
     var rimraf2 = require_rimraf();
@@ -11152,22 +11181,22 @@ var require_remove = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/empty/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/empty/index.js
 var require_empty = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/empty/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/empty/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
-    var mkdir3 = require_mkdirs2();
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
+    var mkdir4 = require_mkdirs2();
     var remove = require_remove();
     var emptyDir = u(function emptyDir2(dir, callback) {
       callback = callback || function() {
       };
-      fs6.readdir(dir, (err, items) => {
+      fs8.readdir(dir, (err, items) => {
         if (err)
-          return mkdir3.mkdirs(dir, callback);
-        items = items.map((item) => path8.join(dir, item));
+          return mkdir4.mkdirs(dir, callback);
+        items = items.map((item) => path10.join(dir, item));
         deleteItem();
         function deleteItem() {
           const item = items.pop();
@@ -11184,12 +11213,12 @@ var require_empty = __commonJS({
     function emptyDirSync(dir) {
       let items;
       try {
-        items = fs6.readdirSync(dir);
+        items = fs8.readdirSync(dir);
       } catch (err) {
-        return mkdir3.mkdirsSync(dir);
+        return mkdir4.mkdirsSync(dir);
       }
       items.forEach((item) => {
-        item = path8.join(dir, item);
+        item = path10.join(dir, item);
         remove.removeSync(item);
       });
     }
@@ -11202,33 +11231,33 @@ var require_empty = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/file.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/file.js
 var require_file = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/file.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/file.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var path8 = require("path");
-    var fs6 = require_graceful_fs();
-    var mkdir3 = require_mkdirs2();
+    var path10 = require("path");
+    var fs8 = require_graceful_fs();
+    var mkdir4 = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
     function createFile(file, callback) {
       function makeFile() {
-        fs6.writeFile(file, "", (err) => {
+        fs8.writeFile(file, "", (err) => {
           if (err)
             return callback(err);
           callback();
         });
       }
-      fs6.stat(file, (err, stats) => {
+      fs8.stat(file, (err, stats) => {
         if (!err && stats.isFile())
           return callback();
-        const dir = path8.dirname(file);
+        const dir = path10.dirname(file);
         pathExists(dir, (err2, dirExists) => {
           if (err2)
             return callback(err2);
           if (dirExists)
             return makeFile();
-          mkdir3.mkdirs(dir, (err3) => {
+          mkdir4.mkdirs(dir, (err3) => {
             if (err3)
               return callback(err3);
             makeFile();
@@ -11239,16 +11268,16 @@ var require_file = __commonJS({
     function createFileSync(file) {
       let stats;
       try {
-        stats = fs6.statSync(file);
+        stats = fs8.statSync(file);
       } catch (e) {
       }
       if (stats && stats.isFile())
         return;
-      const dir = path8.dirname(file);
-      if (!fs6.existsSync(dir)) {
-        mkdir3.mkdirsSync(dir);
+      const dir = path10.dirname(file);
+      if (!fs8.existsSync(dir)) {
+        mkdir4.mkdirsSync(dir);
       }
-      fs6.writeFileSync(file, "");
+      fs8.writeFileSync(file, "");
     }
     module2.exports = {
       createFile: u(createFile),
@@ -11257,18 +11286,18 @@ var require_file = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/link.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/link.js
 var require_link = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/link.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/link.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var path8 = require("path");
-    var fs6 = require_graceful_fs();
-    var mkdir3 = require_mkdirs2();
+    var path10 = require("path");
+    var fs8 = require_graceful_fs();
+    var mkdir4 = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
     function createLink(srcpath, dstpath, callback) {
       function makeLink(srcpath2, dstpath2) {
-        fs6.link(srcpath2, dstpath2, (err) => {
+        fs8.link(srcpath2, dstpath2, (err) => {
           if (err)
             return callback(err);
           callback(null);
@@ -11279,18 +11308,18 @@ var require_link = __commonJS({
           return callback(err);
         if (destinationExists)
           return callback(null);
-        fs6.lstat(srcpath, (err2) => {
+        fs8.lstat(srcpath, (err2) => {
           if (err2) {
             err2.message = err2.message.replace("lstat", "ensureLink");
             return callback(err2);
           }
-          const dir = path8.dirname(dstpath);
+          const dir = path10.dirname(dstpath);
           pathExists(dir, (err3, dirExists) => {
             if (err3)
               return callback(err3);
             if (dirExists)
               return makeLink(srcpath, dstpath);
-            mkdir3.mkdirs(dir, (err4) => {
+            mkdir4.mkdirs(dir, (err4) => {
               if (err4)
                 return callback(err4);
               makeLink(srcpath, dstpath);
@@ -11300,21 +11329,21 @@ var require_link = __commonJS({
       });
     }
     function createLinkSync(srcpath, dstpath) {
-      const destinationExists = fs6.existsSync(dstpath);
+      const destinationExists = fs8.existsSync(dstpath);
       if (destinationExists)
         return void 0;
       try {
-        fs6.lstatSync(srcpath);
+        fs8.lstatSync(srcpath);
       } catch (err) {
         err.message = err.message.replace("lstat", "ensureLink");
         throw err;
       }
-      const dir = path8.dirname(dstpath);
-      const dirExists = fs6.existsSync(dir);
+      const dir = path10.dirname(dstpath);
+      const dirExists = fs8.existsSync(dir);
       if (dirExists)
-        return fs6.linkSync(srcpath, dstpath);
-      mkdir3.mkdirsSync(dir);
-      return fs6.linkSync(srcpath, dstpath);
+        return fs8.linkSync(srcpath, dstpath);
+      mkdir4.mkdirsSync(dir);
+      return fs8.linkSync(srcpath, dstpath);
     }
     module2.exports = {
       createLink: u(createLink),
@@ -11323,16 +11352,16 @@ var require_link = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/symlink-paths.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/symlink-paths.js
 var require_symlink_paths = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/symlink-paths.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/symlink-paths.js"(exports, module2) {
     "use strict";
-    var path8 = require("path");
-    var fs6 = require_graceful_fs();
+    var path10 = require("path");
+    var fs8 = require_graceful_fs();
     var pathExists = require_path_exists().pathExists;
     function symlinkPaths(srcpath, dstpath, callback) {
-      if (path8.isAbsolute(srcpath)) {
-        return fs6.lstat(srcpath, (err) => {
+      if (path10.isAbsolute(srcpath)) {
+        return fs8.lstat(srcpath, (err) => {
           if (err) {
             err.message = err.message.replace("lstat", "ensureSymlink");
             return callback(err);
@@ -11343,8 +11372,8 @@ var require_symlink_paths = __commonJS({
           });
         });
       } else {
-        const dstdir = path8.dirname(dstpath);
-        const relativeToDst = path8.join(dstdir, srcpath);
+        const dstdir = path10.dirname(dstpath);
+        const relativeToDst = path10.join(dstdir, srcpath);
         return pathExists(relativeToDst, (err, exists) => {
           if (err)
             return callback(err);
@@ -11354,14 +11383,14 @@ var require_symlink_paths = __commonJS({
               "toDst": srcpath
             });
           } else {
-            return fs6.lstat(srcpath, (err2) => {
+            return fs8.lstat(srcpath, (err2) => {
               if (err2) {
                 err2.message = err2.message.replace("lstat", "ensureSymlink");
                 return callback(err2);
               }
               return callback(null, {
                 "toCwd": srcpath,
-                "toDst": path8.relative(dstdir, srcpath)
+                "toDst": path10.relative(dstdir, srcpath)
               });
             });
           }
@@ -11370,8 +11399,8 @@ var require_symlink_paths = __commonJS({
     }
     function symlinkPathsSync(srcpath, dstpath) {
       let exists;
-      if (path8.isAbsolute(srcpath)) {
-        exists = fs6.existsSync(srcpath);
+      if (path10.isAbsolute(srcpath)) {
+        exists = fs8.existsSync(srcpath);
         if (!exists)
           throw new Error("absolute srcpath does not exist");
         return {
@@ -11379,21 +11408,21 @@ var require_symlink_paths = __commonJS({
           "toDst": srcpath
         };
       } else {
-        const dstdir = path8.dirname(dstpath);
-        const relativeToDst = path8.join(dstdir, srcpath);
-        exists = fs6.existsSync(relativeToDst);
+        const dstdir = path10.dirname(dstpath);
+        const relativeToDst = path10.join(dstdir, srcpath);
+        exists = fs8.existsSync(relativeToDst);
         if (exists) {
           return {
             "toCwd": relativeToDst,
             "toDst": srcpath
           };
         } else {
-          exists = fs6.existsSync(srcpath);
+          exists = fs8.existsSync(srcpath);
           if (!exists)
             throw new Error("relative srcpath does not exist");
           return {
             "toCwd": srcpath,
-            "toDst": path8.relative(dstdir, srcpath)
+            "toDst": path10.relative(dstdir, srcpath)
           };
         }
       }
@@ -11405,17 +11434,17 @@ var require_symlink_paths = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/symlink-type.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/symlink-type.js
 var require_symlink_type = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/symlink-type.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/symlink-type.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
+    var fs8 = require_graceful_fs();
     function symlinkType(srcpath, type, callback) {
       callback = typeof type === "function" ? type : callback;
       type = typeof type === "function" ? false : type;
       if (type)
         return callback(null, type);
-      fs6.lstat(srcpath, (err, stats) => {
+      fs8.lstat(srcpath, (err, stats) => {
         if (err)
           return callback(null, "file");
         type = stats && stats.isDirectory() ? "dir" : "file";
@@ -11427,7 +11456,7 @@ var require_symlink_type = __commonJS({
       if (type)
         return type;
       try {
-        stats = fs6.lstatSync(srcpath);
+        stats = fs8.lstatSync(srcpath);
       } catch (e) {
         return "file";
       }
@@ -11440,13 +11469,13 @@ var require_symlink_type = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/symlink.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/symlink.js
 var require_symlink = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/symlink.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/symlink.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var path8 = require("path");
-    var fs6 = require_graceful_fs();
+    var path10 = require("path");
+    var fs8 = require_graceful_fs();
     var _mkdirs = require_mkdirs2();
     var mkdirs = _mkdirs.mkdirs;
     var mkdirsSync = _mkdirs.mkdirsSync;
@@ -11472,16 +11501,16 @@ var require_symlink = __commonJS({
           symlinkType(relative.toCwd, type, (err3, type2) => {
             if (err3)
               return callback(err3);
-            const dir = path8.dirname(dstpath);
+            const dir = path10.dirname(dstpath);
             pathExists(dir, (err4, dirExists) => {
               if (err4)
                 return callback(err4);
               if (dirExists)
-                return fs6.symlink(srcpath, dstpath, type2, callback);
+                return fs8.symlink(srcpath, dstpath, type2, callback);
               mkdirs(dir, (err5) => {
                 if (err5)
                   return callback(err5);
-                fs6.symlink(srcpath, dstpath, type2, callback);
+                fs8.symlink(srcpath, dstpath, type2, callback);
               });
             });
           });
@@ -11489,18 +11518,18 @@ var require_symlink = __commonJS({
       });
     }
     function createSymlinkSync(srcpath, dstpath, type) {
-      const destinationExists = fs6.existsSync(dstpath);
+      const destinationExists = fs8.existsSync(dstpath);
       if (destinationExists)
         return void 0;
       const relative = symlinkPathsSync(srcpath, dstpath);
       srcpath = relative.toDst;
       type = symlinkTypeSync(relative.toCwd, type);
-      const dir = path8.dirname(dstpath);
-      const exists = fs6.existsSync(dir);
+      const dir = path10.dirname(dstpath);
+      const exists = fs8.existsSync(dir);
       if (exists)
-        return fs6.symlinkSync(srcpath, dstpath, type);
+        return fs8.symlinkSync(srcpath, dstpath, type);
       mkdirsSync(dir);
-      return fs6.symlinkSync(srcpath, dstpath, type);
+      return fs8.symlinkSync(srcpath, dstpath, type);
     }
     module2.exports = {
       createSymlink: u(createSymlink),
@@ -11509,9 +11538,9 @@ var require_symlink = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/index.js
 var require_ensure = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/ensure/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/ensure/index.js"(exports, module2) {
     "use strict";
     var file = require_file();
     var link = require_link();
@@ -11536,9 +11565,9 @@ var require_ensure = __commonJS({
   }
 });
 
-// .yarn/cache/jsonfile-npm-4.0.0-10ce3aea15-d85d544514.zip/node_modules/jsonfile/index.js
+// .yarn/cache/jsonfile-npm-4.0.0-10ce3aea15-7dc94b628d.zip/node_modules/jsonfile/index.js
 var require_jsonfile = __commonJS({
-  ".yarn/cache/jsonfile-npm-4.0.0-10ce3aea15-d85d544514.zip/node_modules/jsonfile/index.js"(exports, module2) {
+  ".yarn/cache/jsonfile-npm-4.0.0-10ce3aea15-7dc94b628d.zip/node_modules/jsonfile/index.js"(exports, module2) {
     var _fs;
     try {
       _fs = require_graceful_fs();
@@ -11554,12 +11583,12 @@ var require_jsonfile = __commonJS({
         options = { encoding: options };
       }
       options = options || {};
-      var fs6 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var shouldThrow = true;
       if ("throws" in options) {
         shouldThrow = options.throws;
       }
-      fs6.readFile(file, options, function(err, data) {
+      fs8.readFile(file, options, function(err, data) {
         if (err)
           return callback(err);
         data = stripBom(data);
@@ -11582,13 +11611,13 @@ var require_jsonfile = __commonJS({
       if (typeof options === "string") {
         options = { encoding: options };
       }
-      var fs6 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var shouldThrow = true;
       if ("throws" in options) {
         shouldThrow = options.throws;
       }
       try {
-        var content = fs6.readFileSync(file, options);
+        var content = fs8.readFileSync(file, options);
         content = stripBom(content);
         return JSON.parse(content, options.reviver);
       } catch (err) {
@@ -11620,7 +11649,7 @@ var require_jsonfile = __commonJS({
         options = {};
       }
       options = options || {};
-      var fs6 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var str = "";
       try {
         str = stringify(obj, options);
@@ -11629,13 +11658,13 @@ var require_jsonfile = __commonJS({
           callback(err, null);
         return;
       }
-      fs6.writeFile(file, str, options, callback);
+      fs8.writeFile(file, str, options, callback);
     }
     function writeFileSync(file, obj, options) {
       options = options || {};
-      var fs6 = options.fs || _fs;
+      var fs8 = options.fs || _fs;
       var str = stringify(obj, options);
-      return fs6.writeFileSync(file, str, options);
+      return fs8.writeFileSync(file, str, options);
     }
     function stripBom(content) {
       if (Buffer.isBuffer(content))
@@ -11653,9 +11682,9 @@ var require_jsonfile = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/jsonfile.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/jsonfile.js
 var require_jsonfile2 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/jsonfile.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/jsonfile.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
     var jsonFile = require_jsonfile();
@@ -11669,12 +11698,12 @@ var require_jsonfile2 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/output-json.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/output-json.js
 var require_output_json = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/output-json.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/output-json.js"(exports, module2) {
     "use strict";
-    var path8 = require("path");
-    var mkdir3 = require_mkdirs2();
+    var path10 = require("path");
+    var mkdir4 = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
     var jsonFile = require_jsonfile2();
     function outputJson(file, data, options, callback) {
@@ -11682,13 +11711,13 @@ var require_output_json = __commonJS({
         callback = options;
         options = {};
       }
-      const dir = path8.dirname(file);
+      const dir = path10.dirname(file);
       pathExists(dir, (err, itDoes) => {
         if (err)
           return callback(err);
         if (itDoes)
           return jsonFile.writeJson(file, data, options, callback);
-        mkdir3.mkdirs(dir, (err2) => {
+        mkdir4.mkdirs(dir, (err2) => {
           if (err2)
             return callback(err2);
           jsonFile.writeJson(file, data, options, callback);
@@ -11699,18 +11728,18 @@ var require_output_json = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/output-json-sync.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/output-json-sync.js
 var require_output_json_sync = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/output-json-sync.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/output-json-sync.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
-    var mkdir3 = require_mkdirs2();
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
+    var mkdir4 = require_mkdirs2();
     var jsonFile = require_jsonfile2();
     function outputJsonSync(file, data, options) {
-      const dir = path8.dirname(file);
-      if (!fs6.existsSync(dir)) {
-        mkdir3.mkdirsSync(dir);
+      const dir = path10.dirname(file);
+      if (!fs8.existsSync(dir)) {
+        mkdir4.mkdirsSync(dir);
       }
       jsonFile.writeJsonSync(file, data, options);
     }
@@ -11718,9 +11747,9 @@ var require_output_json_sync = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/index.js
 var require_json = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/json/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/json/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
     var jsonFile = require_jsonfile2();
@@ -11736,12 +11765,12 @@ var require_json = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move-sync/move-sync.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move-sync/move-sync.js
 var require_move_sync = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move-sync/move-sync.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move-sync/move-sync.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var copySync = require_copy_sync2().copySync;
     var removeSync = require_remove().removeSync;
     var mkdirpSync = require_mkdirs2().mkdirpSync;
@@ -11751,7 +11780,7 @@ var require_move_sync = __commonJS({
       const overwrite = opts.overwrite || opts.clobber || false;
       const { srcStat } = stat.checkPathsSync(src, dest, "move");
       stat.checkParentPathsSync(src, srcStat, dest, "move");
-      mkdirpSync(path8.dirname(dest));
+      mkdirpSync(path10.dirname(dest));
       return doRename(src, dest, overwrite);
     }
     function doRename(src, dest, overwrite) {
@@ -11759,13 +11788,13 @@ var require_move_sync = __commonJS({
         removeSync(dest);
         return rename(src, dest, overwrite);
       }
-      if (fs6.existsSync(dest))
+      if (fs8.existsSync(dest))
         throw new Error("dest already exists.");
       return rename(src, dest, overwrite);
     }
     function rename(src, dest, overwrite) {
       try {
-        fs6.renameSync(src, dest);
+        fs8.renameSync(src, dest);
       } catch (err) {
         if (err.code !== "EXDEV")
           throw err;
@@ -11784,9 +11813,9 @@ var require_move_sync = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move-sync/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move-sync/index.js
 var require_move_sync2 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move-sync/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move-sync/index.js"(exports, module2) {
     "use strict";
     module2.exports = {
       moveSync: require_move_sync()
@@ -11794,12 +11823,12 @@ var require_move_sync2 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move/move.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move/move.js
 var require_move = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move/move.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move/move.js"(exports, module2) {
     "use strict";
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
     var copy = require_copy2().copy;
     var remove = require_remove().remove;
     var mkdirp = require_mkdirs2().mkdirp;
@@ -11818,7 +11847,7 @@ var require_move = __commonJS({
         stat.checkParentPaths(src, srcStat, dest, "move", (err2) => {
           if (err2)
             return cb(err2);
-          mkdirp(path8.dirname(dest), (err3) => {
+          mkdirp(path10.dirname(dest), (err3) => {
             if (err3)
               return cb(err3);
             return doRename(src, dest, overwrite, cb);
@@ -11843,7 +11872,7 @@ var require_move = __commonJS({
       });
     }
     function rename(src, dest, overwrite, cb) {
-      fs6.rename(src, dest, (err) => {
+      fs8.rename(src, dest, (err) => {
         if (!err)
           return cb();
         if (err.code !== "EXDEV")
@@ -11866,9 +11895,9 @@ var require_move = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move/index.js
 var require_move2 = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/move/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/move/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
     module2.exports = {
@@ -11877,40 +11906,40 @@ var require_move2 = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/output/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/output/index.js
 var require_output = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/output/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/output/index.js"(exports, module2) {
     "use strict";
     var u = require_universalify().fromCallback;
-    var fs6 = require_graceful_fs();
-    var path8 = require("path");
-    var mkdir3 = require_mkdirs2();
+    var fs8 = require_graceful_fs();
+    var path10 = require("path");
+    var mkdir4 = require_mkdirs2();
     var pathExists = require_path_exists().pathExists;
     function outputFile(file, data, encoding, callback) {
       if (typeof encoding === "function") {
         callback = encoding;
         encoding = "utf8";
       }
-      const dir = path8.dirname(file);
+      const dir = path10.dirname(file);
       pathExists(dir, (err, itDoes) => {
         if (err)
           return callback(err);
         if (itDoes)
-          return fs6.writeFile(file, data, encoding, callback);
-        mkdir3.mkdirs(dir, (err2) => {
+          return fs8.writeFile(file, data, encoding, callback);
+        mkdir4.mkdirs(dir, (err2) => {
           if (err2)
             return callback(err2);
-          fs6.writeFile(file, data, encoding, callback);
+          fs8.writeFile(file, data, encoding, callback);
         });
       });
     }
     function outputFileSync(file, ...args) {
-      const dir = path8.dirname(file);
-      if (fs6.existsSync(dir)) {
-        return fs6.writeFileSync(file, ...args);
+      const dir = path10.dirname(file);
+      if (fs8.existsSync(dir)) {
+        return fs8.writeFileSync(file, ...args);
       }
-      mkdir3.mkdirsSync(dir);
-      fs6.writeFileSync(file, ...args);
+      mkdir4.mkdirsSync(dir);
+      fs8.writeFileSync(file, ...args);
     }
     module2.exports = {
       outputFile: u(outputFile),
@@ -11919,9 +11948,9 @@ var require_output = __commonJS({
   }
 });
 
-// .yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/index.js
+// .yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/index.js
 var require_lib = __commonJS({
-  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-cfdc1f2b8d.zip/node_modules/fs-extra/lib/index.js"(exports, module2) {
+  ".yarn/cache/fs-extra-npm-8.1.0-197473387f-259f7b814d.zip/node_modules/fs-extra/lib/index.js"(exports, module2) {
     "use strict";
     module2.exports = Object.assign(
       {},
@@ -11940,20 +11969,20 @@ var require_lib = __commonJS({
       require_path_exists(),
       require_remove()
     );
-    var fs6 = require("fs");
-    if (Object.getOwnPropertyDescriptor(fs6, "promises")) {
+    var fs8 = require("fs");
+    if (Object.getOwnPropertyDescriptor(fs8, "promises")) {
       Object.defineProperty(module2.exports, "promises", {
         get() {
-          return fs6.promises;
+          return fs8.promises;
         }
       });
     }
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/notfound.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/notfound.js
 var require_notfound = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/notfound.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/notfound.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var NotFoundError = class extends Error {
@@ -11966,9 +11995,9 @@ var require_notfound = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/file.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/file.js
 var require_file2 = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/file.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/file.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -12018,9 +12047,9 @@ var require_file2 = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseControlResponse.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseControlResponse.js
 var require_parseControlResponse = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseControlResponse.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseControlResponse.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.positiveIntermediate = exports.positiveCompletion = exports.isMultiline = exports.isSingleLine = exports.parseControlResponse = void 0;
@@ -12071,9 +12100,9 @@ var require_parseControlResponse = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/FtpContext.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/FtpContext.js
 var require_FtpContext = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/FtpContext.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/FtpContext.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.FTPContext = exports.FTPError = void 0;
@@ -12390,9 +12419,9 @@ Closing reason: ${this._closingError.stack}`;
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/FileInfo.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/FileInfo.js
 var require_FileInfo = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/FileInfo.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/FileInfo.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.FileInfo = exports.FileType = void 0;
@@ -12447,9 +12476,9 @@ var require_FileInfo = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseListDOS.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseListDOS.js
 var require_parseListDOS = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseListDOS.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseListDOS.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.transformList = exports.parseLine = exports.testLine = void 0;
@@ -12491,9 +12520,9 @@ var require_parseListDOS = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseListUnix.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseListUnix.js
 var require_parseListUnix = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseListUnix.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseListUnix.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.transformList = exports.parseLine = exports.testLine = void 0;
@@ -12578,9 +12607,9 @@ var require_parseListUnix = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseListMLSD.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseListMLSD.js
 var require_parseListMLSD = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseListMLSD.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseListMLSD.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.parseMLSxDate = exports.transformList = exports.parseLine = exports.testLine = void 0;
@@ -12740,9 +12769,9 @@ var require_parseListMLSD = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseList.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseList.js
 var require_parseList = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/parseList.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/parseList.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -12814,9 +12843,9 @@ var require_parseList = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/ProgressTracker.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/ProgressTracker.js
 var require_ProgressTracker = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/ProgressTracker.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/ProgressTracker.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ProgressTracker = void 0;
@@ -12885,9 +12914,9 @@ var require_ProgressTracker = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/StringWriter.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/StringWriter.js
 var require_StringWriter = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/StringWriter.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/StringWriter.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.StringWriter = void 0;
@@ -12913,9 +12942,9 @@ var require_StringWriter = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/netUtils.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/netUtils.js
 var require_netUtils = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/netUtils.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/netUtils.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ipIsPrivateV4Address = exports.upgradeSocket = exports.describeAddress = exports.describeTLS = void 0;
@@ -12965,9 +12994,9 @@ var require_netUtils = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/transfer.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/transfer.js
 var require_transfer = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/transfer.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/transfer.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.downloadTo = exports.uploadFrom = exports.connectForPassiveTransfer = exports.parsePasvResponse = exports.enterPassiveModeIPv4 = exports.parseEpsvResponse = exports.enterPassiveModeIPv6 = void 0;
@@ -13204,9 +13233,9 @@ var require_transfer = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/Client.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/Client.js
 var require_Client = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/Client.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/Client.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Client = void 0;
@@ -13446,8 +13475,8 @@ var require_Client = __commonJS({
       /**
        * Set the working directory.
        */
-      async cd(path8) {
-        const validPath = await this.protectWhitespace(path8);
+      async cd(path10) {
+        const validPath = await this.protectWhitespace(path10);
         return this.send("CWD " + validPath);
       }
       /**
@@ -13460,8 +13489,8 @@ var require_Client = __commonJS({
        * Get the last modified time of a file. This is not supported by every FTP server, in which case
        * calling this method will throw an exception.
        */
-      async lastMod(path8) {
-        const validPath = await this.protectWhitespace(path8);
+      async lastMod(path10) {
+        const validPath = await this.protectWhitespace(path10);
         const res = await this.send(`MDTM ${validPath}`);
         const date = res.message.slice(4);
         return (0, parseListMLSD_1.parseMLSxDate)(date);
@@ -13469,8 +13498,8 @@ var require_Client = __commonJS({
       /**
        * Get the size of a file.
        */
-      async size(path8) {
-        const validPath = await this.protectWhitespace(path8);
+      async size(path10) {
+        const validPath = await this.protectWhitespace(path10);
         const command = `SIZE ${validPath}`;
         const res = await this.send(command);
         const size = parseInt(res.message.slice(4), 10);
@@ -13497,8 +13526,8 @@ var require_Client = __commonJS({
        * You can ignore FTP error return codes which won't throw an exception if e.g.
        * the file doesn't exist.
        */
-      async remove(path8, ignoreErrorCodes = false) {
-        const validPath = await this.protectWhitespace(path8);
+      async remove(path10, ignoreErrorCodes = false) {
+        const validPath = await this.protectWhitespace(path10);
         if (ignoreErrorCodes) {
           return this.sendIgnoringError(`DELE ${validPath}`);
         }
@@ -13652,8 +13681,8 @@ var require_Client = __commonJS({
        *
        * @param [path]  Path to remote file or directory.
        */
-      async list(path8 = "") {
-        const validPath = await this.protectWhitespace(path8);
+      async list(path10 = "") {
+        const validPath = await this.protectWhitespace(path10);
         let lastError;
         for (const candidate of this.availableListCommands) {
           const command = validPath === "" ? candidate : `${candidate} ${validPath}`;
@@ -13815,21 +13844,21 @@ var require_Client = __commonJS({
       /**
        * Remove an empty directory, will fail if not empty.
        */
-      async removeEmptyDir(path8) {
-        const validPath = await this.protectWhitespace(path8);
+      async removeEmptyDir(path10) {
+        const validPath = await this.protectWhitespace(path10);
         return this.send(`RMD ${validPath}`);
       }
       /**
        * FTP servers can't handle filenames that have leading whitespace. This method transforms
        * a given path to fix that issue for most cases.
        */
-      async protectWhitespace(path8) {
-        if (!path8.startsWith(" ")) {
-          return path8;
+      async protectWhitespace(path10) {
+        if (!path10.startsWith(" ")) {
+          return path10;
         }
         const pwd = await this.pwd();
         const absolutePathPrefix = pwd.endsWith("/") ? pwd : pwd + "/";
-        return absolutePathPrefix + path8;
+        return absolutePathPrefix + path10;
       }
       async _exitAtCurrentDirectory(func) {
         const userDir = await this.pwd();
@@ -13906,11 +13935,11 @@ var require_Client = __commonJS({
       }
     };
     exports.Client = Client;
-    async function ensureLocalDirectory(path8) {
+    async function ensureLocalDirectory(path10) {
       try {
-        await fsStat(path8);
+        await fsStat(path10);
       } catch (err) {
-        await fsMkDir(path8, { recursive: true });
+        await fsMkDir(path10, { recursive: true });
       }
     }
     async function ignoreError(func) {
@@ -13923,17 +13952,17 @@ var require_Client = __commonJS({
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/StringEncoding.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/StringEncoding.js
 var require_StringEncoding = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/StringEncoding.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/StringEncoding.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
   }
 });
 
-// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/index.js
+// .yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/index.js
 var require_dist6 = __commonJS({
-  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-3d085eaea5.zip/node_modules/basic-ftp/dist/index.js"(exports) {
+  ".yarn/cache/basic-ftp-npm-5.0.3-95a5b33162-2b960ea976.zip/node_modules/basic-ftp/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -13972,9 +14001,9 @@ var require_dist6 = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/ftp.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/ftp.js
 var require_ftp = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/ftp.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/ftp.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -14053,9 +14082,9 @@ var require_ftp = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/http-error.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/http-error.js
 var require_http_error = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/http-error.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/http-error.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var http_1 = require("http");
@@ -14070,9 +14099,9 @@ var require_http_error = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/http.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/http.js
 var require_http = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/http.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/http.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -14223,9 +14252,9 @@ var require_http = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/https.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/https.js
 var require_https = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/https.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/https.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -14241,9 +14270,9 @@ var require_https = __commonJS({
   }
 });
 
-// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/index.js
+// .yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/index.js
 var require_dist7 = __commonJS({
-  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-ffa2b3377c.zip/node_modules/get-uri/dist/index.js"(exports) {
+  ".yarn/cache/get-uri-npm-6.0.1-d4f0bb7365-dde1cd2fa7.zip/node_modules/get-uri/dist/index.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -14286,9 +14315,9 @@ var require_dist7 = __commonJS({
   }
 });
 
-// .yarn/cache/estraverse-npm-4.3.0-920a32f3c6-befc0287c3.zip/node_modules/estraverse/package.json
+// .yarn/cache/estraverse-npm-4.3.0-920a32f3c6-9cb46463ef.zip/node_modules/estraverse/package.json
 var require_package = __commonJS({
-  ".yarn/cache/estraverse-npm-4.3.0-920a32f3c6-befc0287c3.zip/node_modules/estraverse/package.json"(exports, module2) {
+  ".yarn/cache/estraverse-npm-4.3.0-920a32f3c6-9cb46463ef.zip/node_modules/estraverse/package.json"(exports, module2) {
     module2.exports = {
       name: "estraverse",
       description: "ECMAScript JS AST traversal functions",
@@ -14332,9 +14361,9 @@ var require_package = __commonJS({
   }
 });
 
-// .yarn/cache/estraverse-npm-4.3.0-920a32f3c6-befc0287c3.zip/node_modules/estraverse/estraverse.js
+// .yarn/cache/estraverse-npm-4.3.0-920a32f3c6-9cb46463ef.zip/node_modules/estraverse/estraverse.js
 var require_estraverse = __commonJS({
-  ".yarn/cache/estraverse-npm-4.3.0-920a32f3c6-befc0287c3.zip/node_modules/estraverse/estraverse.js"(exports) {
+  ".yarn/cache/estraverse-npm-4.3.0-920a32f3c6-9cb46463ef.zip/node_modules/estraverse/estraverse.js"(exports) {
     (function clone(exports2) {
       "use strict";
       var Syntax, VisitorOption, VisitorKeys, BREAK, SKIP, REMOVE;
@@ -14548,23 +14577,23 @@ var require_estraverse = __commonJS({
           return false;
         }
       };
-      function Element(node, path8, wrap, ref) {
+      function Element(node, path10, wrap, ref) {
         this.node = node;
-        this.path = path8;
+        this.path = path10;
         this.wrap = wrap;
         this.ref = ref;
       }
       function Controller() {
       }
-      Controller.prototype.path = function path8() {
+      Controller.prototype.path = function path10() {
         var i, iz, j, jz, result, element;
-        function addToPath(result2, path9) {
-          if (Array.isArray(path9)) {
-            for (j = 0, jz = path9.length; j < jz; ++j) {
-              result2.push(path9[j]);
+        function addToPath(result2, path11) {
+          if (Array.isArray(path11)) {
+            for (j = 0, jz = path11.length; j < jz; ++j) {
+              result2.push(path11[j]);
             }
           } else {
-            result2.push(path9);
+            result2.push(path11);
           }
         }
         if (!this.__current.path) {
@@ -14929,9 +14958,9 @@ var require_estraverse = __commonJS({
   }
 });
 
-// .yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/ast.js
+// .yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/ast.js
 var require_ast = __commonJS({
-  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/ast.js"(exports, module2) {
+  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/ast.js"(exports, module2) {
     (function() {
       "use strict";
       function isExpression(node) {
@@ -15049,9 +15078,9 @@ var require_ast = __commonJS({
   }
 });
 
-// .yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/code.js
+// .yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/code.js
 var require_code = __commonJS({
-  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/code.js"(exports, module2) {
+  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/code.js"(exports, module2) {
     (function() {
       "use strict";
       var ES6Regex, ES5Regex, NON_ASCII_WHITESPACES, IDENTIFIER_START, IDENTIFIER_PART, ch;
@@ -15150,9 +15179,9 @@ var require_code = __commonJS({
   }
 });
 
-// .yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/keyword.js
+// .yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/keyword.js
 var require_keyword = __commonJS({
-  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/keyword.js"(exports, module2) {
+  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/keyword.js"(exports, module2) {
     (function() {
       "use strict";
       var code = require_code();
@@ -15278,9 +15307,9 @@ var require_keyword = __commonJS({
   }
 });
 
-// .yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/utils.js
+// .yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/utils.js
 var require_utils2 = __commonJS({
-  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-179e017b58.zip/node_modules/esutils/lib/utils.js"(exports) {
+  ".yarn/cache/esutils-npm-2.0.3-f865beafd5-9a2fe69a41.zip/node_modules/esutils/lib/utils.js"(exports) {
     (function() {
       "use strict";
       exports.ast = require_ast();
@@ -15290,9 +15319,9 @@ var require_utils2 = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/base64.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/base64.js
 var require_base64 = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/base64.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/base64.js"(exports) {
     var intToCharMap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".split("");
     exports.encode = function(number) {
       if (0 <= number && number < intToCharMap.length) {
@@ -15331,9 +15360,9 @@ var require_base64 = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/base64-vlq.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/base64-vlq.js
 var require_base64_vlq = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/base64-vlq.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/base64-vlq.js"(exports) {
     var base64 = require_base64();
     var VLQ_BASE_SHIFT = 5;
     var VLQ_BASE = 1 << VLQ_BASE_SHIFT;
@@ -15385,9 +15414,9 @@ var require_base64_vlq = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/util.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/util.js
 var require_util2 = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/util.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/util.js"(exports) {
     function getArg(aArgs, aName, aDefaultValue) {
       if (aName in aArgs) {
         return aArgs[aName];
@@ -15436,16 +15465,16 @@ var require_util2 = __commonJS({
     }
     exports.urlGenerate = urlGenerate;
     function normalize(aPath) {
-      var path8 = aPath;
+      var path10 = aPath;
       var url = urlParse(aPath);
       if (url) {
         if (!url.path) {
           return aPath;
         }
-        path8 = url.path;
+        path10 = url.path;
       }
-      var isAbsolute = exports.isAbsolute(path8);
-      var parts = path8.split(/\/+/);
+      var isAbsolute = exports.isAbsolute(path10);
+      var parts = path10.split(/\/+/);
       for (var part, up = 0, i = parts.length - 1; i >= 0; i--) {
         part = parts[i];
         if (part === ".") {
@@ -15462,15 +15491,15 @@ var require_util2 = __commonJS({
           }
         }
       }
-      path8 = parts.join("/");
-      if (path8 === "") {
-        path8 = isAbsolute ? "/" : ".";
+      path10 = parts.join("/");
+      if (path10 === "") {
+        path10 = isAbsolute ? "/" : ".";
       }
       if (url) {
-        url.path = path8;
+        url.path = path10;
         return urlGenerate(url);
       }
-      return path8;
+      return path10;
     }
     exports.normalize = normalize;
     function join2(aRoot, aPath) {
@@ -15686,9 +15715,9 @@ var require_util2 = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/array-set.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/array-set.js
 var require_array_set = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/array-set.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/array-set.js"(exports) {
     var util = require_util2();
     var has = Object.prototype.hasOwnProperty;
     var hasNativeMap = typeof Map !== "undefined";
@@ -15756,9 +15785,9 @@ var require_array_set = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/mapping-list.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/mapping-list.js
 var require_mapping_list = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/mapping-list.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/mapping-list.js"(exports) {
     var util = require_util2();
     function generatedPositionAfter(mappingA, mappingB) {
       var lineA = mappingA.generatedLine;
@@ -15795,9 +15824,9 @@ var require_mapping_list = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/source-map-generator.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/source-map-generator.js
 var require_source_map_generator = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/source-map-generator.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/source-map-generator.js"(exports) {
     var base64VLQ = require_base64_vlq();
     var util = require_util2();
     var ArraySet = require_array_set().ArraySet;
@@ -16071,9 +16100,9 @@ var require_source_map_generator = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/binary-search.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/binary-search.js
 var require_binary_search = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/binary-search.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/binary-search.js"(exports) {
     exports.GREATEST_LOWER_BOUND = 1;
     exports.LEAST_UPPER_BOUND = 2;
     function recursiveSearch(aLow, aHigh, aNeedle, aHaystack, aCompare, aBias) {
@@ -16127,9 +16156,9 @@ var require_binary_search = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/quick-sort.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/quick-sort.js
 var require_quick_sort = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/quick-sort.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/quick-sort.js"(exports) {
     function swap(ary, x, y) {
       var temp = ary[x];
       ary[x] = ary[y];
@@ -16162,9 +16191,9 @@ var require_quick_sort = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/source-map-consumer.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/source-map-consumer.js
 var require_source_map_consumer = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/source-map-consumer.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/source-map-consumer.js"(exports) {
     var util = require_util2();
     var binarySearch = require_binary_search();
     var ArraySet = require_array_set().ArraySet;
@@ -16763,9 +16792,9 @@ var require_source_map_consumer = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/source-node.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/source-node.js
 var require_source_node = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/lib/source-node.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/lib/source-node.js"(exports) {
     var SourceMapGenerator = require_source_map_generator().SourceMapGenerator;
     var util = require_util2();
     var REGEX_NEWLINE = /(\r?\n)/;
@@ -17029,18 +17058,18 @@ var require_source_node = __commonJS({
   }
 });
 
-// .yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/source-map.js
+// .yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/source-map.js
 var require_source_map = __commonJS({
-  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-cba9f44c3a.zip/node_modules/source-map/source-map.js"(exports) {
+  ".yarn/cache/source-map-npm-0.6.1-1a3621db16-ab55398007.zip/node_modules/source-map/source-map.js"(exports) {
     exports.SourceMapGenerator = require_source_map_generator().SourceMapGenerator;
     exports.SourceMapConsumer = require_source_map_consumer().SourceMapConsumer;
     exports.SourceNode = require_source_node().SourceNode;
   }
 });
 
-// .yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-14769d3458.zip/node_modules/escodegen/package.json
+// .yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-30d337803e.zip/node_modules/escodegen/package.json
 var require_package2 = __commonJS({
-  ".yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-14769d3458.zip/node_modules/escodegen/package.json"(exports, module2) {
+  ".yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-30d337803e.zip/node_modules/escodegen/package.json"(exports, module2) {
     module2.exports = {
       name: "escodegen",
       description: "ECMAScript code generator",
@@ -17105,9 +17134,9 @@ var require_package2 = __commonJS({
   }
 });
 
-// .yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-14769d3458.zip/node_modules/escodegen/escodegen.js
+// .yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-30d337803e.zip/node_modules/escodegen/escodegen.js
 var require_escodegen = __commonJS({
-  ".yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-14769d3458.zip/node_modules/escodegen/escodegen.js"(exports) {
+  ".yarn/cache/escodegen-npm-1.14.3-a4dedc6eeb-30d337803e.zip/node_modules/escodegen/escodegen.js"(exports) {
     (function() {
       "use strict";
       var Syntax, Precedence, BinaryPrecedence, SourceNode, estraverse, esutils, base, indent, json, renumber, hexadecimal, quotes, escapeless, newline, space, parentheses, semicolons, safeConcatenation, directive, extra, parse, sourceMap, sourceCode, preserveBlankLines, FORMAT_MINIFY, FORMAT_DEFAULTS;
@@ -19161,9 +19190,9 @@ var require_escodegen = __commonJS({
   }
 });
 
-// .yarn/cache/esprima-npm-4.0.1-1084e98778-08b3015538.zip/node_modules/esprima/dist/esprima.js
+// .yarn/cache/esprima-npm-4.0.1-1084e98778-ad4bab9ead.zip/node_modules/esprima/dist/esprima.js
 var require_esprima = __commonJS({
-  ".yarn/cache/esprima-npm-4.0.1-1084e98778-08b3015538.zip/node_modules/esprima/dist/esprima.js"(exports, module2) {
+  ".yarn/cache/esprima-npm-4.0.1-1084e98778-ad4bab9ead.zip/node_modules/esprima/dist/esprima.js"(exports, module2) {
     (function webpackUniversalModuleDefinition(root, factory) {
       if (typeof exports === "object" && typeof module2 === "object")
         module2.exports = factory();
@@ -25397,9 +25426,10 @@ var require_esprima = __commonJS({
   }
 });
 
-// .yarn/cache/tslib-npm-2.5.2-3f1b58afbb-ed22e23f3d.zip/node_modules/tslib/tslib.es6.js
+// .yarn/cache/tslib-npm-2.6.0-4d336a6824-8d18020a8b.zip/node_modules/tslib/tslib.es6.mjs
 var tslib_es6_exports = {};
 __export(tslib_es6_exports, {
+  __addDisposableResource: () => __addDisposableResource,
   __assign: () => __assign,
   __asyncDelegator: () => __asyncDelegator,
   __asyncGenerator: () => __asyncGenerator,
@@ -25411,6 +25441,7 @@ __export(tslib_es6_exports, {
   __classPrivateFieldSet: () => __classPrivateFieldSet,
   __createBinding: () => __createBinding,
   __decorate: () => __decorate,
+  __disposeResources: () => __disposeResources,
   __esDecorate: () => __esDecorate,
   __exportStar: () => __exportStar,
   __extends: () => __extends,
@@ -25813,9 +25844,56 @@ function __classPrivateFieldIn(state, receiver) {
     throw new TypeError("Cannot use 'in' operator on non-object");
   return typeof state === "function" ? receiver === state : state.has(receiver);
 }
-var extendStatics, __assign, __createBinding, __setModuleDefault, tslib_es6_default;
+function __addDisposableResource(env2, value, async) {
+  if (value !== null && value !== void 0) {
+    if (typeof value !== "object")
+      throw new TypeError("Object expected.");
+    var dispose;
+    if (async) {
+      if (!Symbol.asyncDispose)
+        throw new TypeError("Symbol.asyncDispose is not defined.");
+      dispose = value[Symbol.asyncDispose];
+    }
+    if (dispose === void 0) {
+      if (!Symbol.dispose)
+        throw new TypeError("Symbol.dispose is not defined.");
+      dispose = value[Symbol.dispose];
+    }
+    if (typeof dispose !== "function")
+      throw new TypeError("Object not disposable.");
+    env2.stack.push({ value, dispose, async });
+  } else if (async) {
+    env2.stack.push({ async: true });
+  }
+  return value;
+}
+function __disposeResources(env2) {
+  function fail(e) {
+    env2.error = env2.hasError ? new _SuppressedError(e, env2.error, "An error was suppressed during disposal.") : e;
+    env2.hasError = true;
+  }
+  function next() {
+    while (env2.stack.length) {
+      var rec = env2.stack.pop();
+      try {
+        var result = rec.dispose && rec.dispose.call(rec.value);
+        if (rec.async)
+          return Promise.resolve(result).then(next, function(e) {
+            fail(e);
+            return next();
+          });
+      } catch (e) {
+        fail(e);
+      }
+    }
+    if (env2.hasError)
+      throw env2.error;
+  }
+  return next();
+}
+var extendStatics, __assign, __createBinding, __setModuleDefault, _SuppressedError, tslib_es6_default;
 var init_tslib_es6 = __esm({
-  ".yarn/cache/tslib-npm-2.5.2-3f1b58afbb-ed22e23f3d.zip/node_modules/tslib/tslib.es6.js"() {
+  ".yarn/cache/tslib-npm-2.6.0-4d336a6824-8d18020a8b.zip/node_modules/tslib/tslib.es6.mjs"() {
     extendStatics = function(d, b) {
       extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d2, b2) {
         d2.__proto__ = b2;
@@ -25858,6 +25936,10 @@ var init_tslib_es6 = __esm({
     } : function(o, v) {
       o["default"] = v;
     };
+    _SuppressedError = typeof SuppressedError === "function" ? SuppressedError : function(error, suppressed, message) {
+      var e = new Error(message);
+      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
     tslib_es6_default = {
       __extends,
       __assign,
@@ -25883,14 +25965,16 @@ var init_tslib_es6 = __esm({
       __importDefault,
       __classPrivateFieldGet,
       __classPrivateFieldSet,
-      __classPrivateFieldIn
+      __classPrivateFieldIn,
+      __addDisposableResource,
+      __disposeResources
     };
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/types.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/types.js
 var require_types = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/types.js"(exports) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/types.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.Def = void 0;
@@ -26573,9 +26657,9 @@ var require_types = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/path.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/path.js
 var require_path = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/path.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/path.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -26604,16 +26688,16 @@ var require_path = __commonJS({
         this.__childCache = null;
       };
       var Pp = Path.prototype;
-      function getChildCache(path8) {
-        return path8.__childCache || (path8.__childCache = /* @__PURE__ */ Object.create(null));
+      function getChildCache(path10) {
+        return path10.__childCache || (path10.__childCache = /* @__PURE__ */ Object.create(null));
       }
-      function getChildPath(path8, name) {
-        var cache = getChildCache(path8);
-        var actualChildValue = path8.getValueProperty(name);
+      function getChildPath(path10, name) {
+        var cache = getChildCache(path10);
+        var actualChildValue = path10.getValueProperty(name);
         var childPath = cache[name];
         if (!hasOwn.call(cache, name) || // Ensure consistency between cache and reality.
         childPath.value !== actualChildValue) {
-          childPath = cache[name] = new path8.constructor(actualChildValue, path8, name);
+          childPath = cache[name] = new path10.constructor(actualChildValue, path10, name);
         }
         return childPath;
       }
@@ -26625,12 +26709,12 @@ var require_path = __commonJS({
         for (var _i = 0; _i < arguments.length; _i++) {
           names[_i] = arguments[_i];
         }
-        var path8 = this;
+        var path10 = this;
         var count = names.length;
         for (var i = 0; i < count; ++i) {
-          path8 = getChildPath(path8, names[i]);
+          path10 = getChildPath(path10, names[i]);
         }
-        return path8;
+        return path10;
       };
       Pp.each = function each(callback, context) {
         var childPaths = [];
@@ -26666,12 +26750,12 @@ var require_path = __commonJS({
       };
       function emptyMoves() {
       }
-      function getMoves(path8, offset, start, end) {
-        isArray2.assert(path8.value);
+      function getMoves(path10, offset, start, end) {
+        isArray2.assert(path10.value);
         if (offset === 0) {
           return emptyMoves;
         }
-        var length = path8.value.length;
+        var length = path10.value.length;
         if (length < 1) {
           return emptyMoves;
         }
@@ -26689,10 +26773,10 @@ var require_path = __commonJS({
         isNumber2.assert(start);
         isNumber2.assert(end);
         var moves = /* @__PURE__ */ Object.create(null);
-        var cache = getChildCache(path8);
+        var cache = getChildCache(path10);
         for (var i = start; i < end; ++i) {
-          if (hasOwn.call(path8.value, i)) {
-            var childPath = path8.get(i);
+          if (hasOwn.call(path10.value, i)) {
+            var childPath = path10.get(i);
             if (childPath.name !== i) {
               throw new Error("");
             }
@@ -26710,7 +26794,7 @@ var require_path = __commonJS({
               throw new Error("");
             }
             cache[newIndex2] = childPath2;
-            path8.value[newIndex2] = childPath2.value;
+            path10.value[newIndex2] = childPath2.value;
           }
         };
       }
@@ -26785,34 +26869,34 @@ var require_path = __commonJS({
         }
         return pp.insertAt.apply(pp, insertAtArgs);
       };
-      function repairRelationshipWithParent(path8) {
-        if (!(path8 instanceof Path)) {
+      function repairRelationshipWithParent(path10) {
+        if (!(path10 instanceof Path)) {
           throw new Error("");
         }
-        var pp = path8.parentPath;
+        var pp = path10.parentPath;
         if (!pp) {
-          return path8;
+          return path10;
         }
         var parentValue = pp.value;
         var parentCache = getChildCache(pp);
-        if (parentValue[path8.name] === path8.value) {
-          parentCache[path8.name] = path8;
+        if (parentValue[path10.name] === path10.value) {
+          parentCache[path10.name] = path10;
         } else if (isArray2.check(parentValue)) {
-          var i = parentValue.indexOf(path8.value);
+          var i = parentValue.indexOf(path10.value);
           if (i >= 0) {
-            parentCache[path8.name = i] = path8;
+            parentCache[path10.name = i] = path10;
           }
         } else {
-          parentValue[path8.name] = path8.value;
-          parentCache[path8.name] = path8;
+          parentValue[path10.name] = path10.value;
+          parentCache[path10.name] = path10;
         }
-        if (parentValue[path8.name] !== path8.value) {
+        if (parentValue[path10.name] !== path10.value) {
           throw new Error("");
         }
-        if (path8.parentPath.get(path8.name) !== path8) {
+        if (path10.parentPath.get(path10.name) !== path10) {
           throw new Error("");
         }
-        return path8;
+        return path10;
       }
       Pp.replace = function replace(replacement) {
         var results = [];
@@ -26876,9 +26960,9 @@ var require_path = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/scope.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/scope.js
 var require_scope = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/scope.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/scope.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -26892,11 +26976,11 @@ var require_scope = __commonJS({
       var Expression = namedTypes.Expression;
       var isArray2 = types.builtInTypes.array;
       var b = types.builders;
-      var Scope = function Scope2(path8, parentScope) {
+      var Scope = function Scope2(path10, parentScope) {
         if (!(this instanceof Scope2)) {
           throw new Error("Scope constructor cannot be invoked without 'new'");
         }
-        ScopeType.assert(path8.value);
+        ScopeType.assert(path10.value);
         var depth;
         if (parentScope) {
           if (!(parentScope instanceof Scope2)) {
@@ -26908,8 +26992,8 @@ var require_scope = __commonJS({
           depth = 0;
         }
         Object.defineProperties(this, {
-          path: { value: path8 },
-          node: { value: path8.value },
+          path: { value: path10 },
+          node: { value: path10.value },
           isGlobal: { value: !parentScope, enumerable: true },
           depth: { value: depth },
           parent: { value: parentScope },
@@ -26984,50 +27068,50 @@ var require_scope = __commonJS({
         this.scan();
         return this.types;
       };
-      function scanScope(path8, bindings, scopeTypes2) {
-        var node = path8.value;
+      function scanScope(path10, bindings, scopeTypes2) {
+        var node = path10.value;
         ScopeType.assert(node);
         if (namedTypes.CatchClause.check(node)) {
-          var param = path8.get("param");
+          var param = path10.get("param");
           if (param.value) {
             addPattern(param, bindings);
           }
         } else {
-          recursiveScanScope(path8, bindings, scopeTypes2);
+          recursiveScanScope(path10, bindings, scopeTypes2);
         }
       }
-      function recursiveScanScope(path8, bindings, scopeTypes2) {
-        var node = path8.value;
-        if (path8.parent && namedTypes.FunctionExpression.check(path8.parent.node) && path8.parent.node.id) {
-          addPattern(path8.parent.get("id"), bindings);
+      function recursiveScanScope(path10, bindings, scopeTypes2) {
+        var node = path10.value;
+        if (path10.parent && namedTypes.FunctionExpression.check(path10.parent.node) && path10.parent.node.id) {
+          addPattern(path10.parent.get("id"), bindings);
         }
         if (!node) {
         } else if (isArray2.check(node)) {
-          path8.each(function(childPath) {
+          path10.each(function(childPath) {
             recursiveScanChild(childPath, bindings, scopeTypes2);
           });
         } else if (namedTypes.Function.check(node)) {
-          path8.get("params").each(function(paramPath) {
+          path10.get("params").each(function(paramPath) {
             addPattern(paramPath, bindings);
           });
-          recursiveScanChild(path8.get("body"), bindings, scopeTypes2);
+          recursiveScanChild(path10.get("body"), bindings, scopeTypes2);
         } else if (namedTypes.TypeAlias && namedTypes.TypeAlias.check(node) || namedTypes.InterfaceDeclaration && namedTypes.InterfaceDeclaration.check(node) || namedTypes.TSTypeAliasDeclaration && namedTypes.TSTypeAliasDeclaration.check(node) || namedTypes.TSInterfaceDeclaration && namedTypes.TSInterfaceDeclaration.check(node)) {
-          addTypePattern(path8.get("id"), scopeTypes2);
+          addTypePattern(path10.get("id"), scopeTypes2);
         } else if (namedTypes.VariableDeclarator.check(node)) {
-          addPattern(path8.get("id"), bindings);
-          recursiveScanChild(path8.get("init"), bindings, scopeTypes2);
+          addPattern(path10.get("id"), bindings);
+          recursiveScanChild(path10.get("init"), bindings, scopeTypes2);
         } else if (node.type === "ImportSpecifier" || node.type === "ImportNamespaceSpecifier" || node.type === "ImportDefaultSpecifier") {
           addPattern(
             // Esprima used to use the .name field to refer to the local
             // binding identifier for ImportSpecifier nodes, but .id for
             // ImportNamespaceSpecifier and ImportDefaultSpecifier nodes.
             // ESTree/Acorn/ESpree use .local for all three node types.
-            path8.get(node.local ? "local" : node.name ? "name" : "id"),
+            path10.get(node.local ? "local" : node.name ? "name" : "id"),
             bindings
           );
         } else if (Node.check(node) && !Expression.check(node)) {
           types.eachField(node, function(name, child) {
-            var childPath = path8.get(name);
+            var childPath = path10.get(name);
             if (!pathHasValue(childPath, child)) {
               throw new Error("");
             }
@@ -27035,34 +27119,34 @@ var require_scope = __commonJS({
           });
         }
       }
-      function pathHasValue(path8, value) {
-        if (path8.value === value) {
+      function pathHasValue(path10, value) {
+        if (path10.value === value) {
           return true;
         }
-        if (Array.isArray(path8.value) && path8.value.length === 0 && Array.isArray(value) && value.length === 0) {
+        if (Array.isArray(path10.value) && path10.value.length === 0 && Array.isArray(value) && value.length === 0) {
           return true;
         }
         return false;
       }
-      function recursiveScanChild(path8, bindings, scopeTypes2) {
-        var node = path8.value;
+      function recursiveScanChild(path10, bindings, scopeTypes2) {
+        var node = path10.value;
         if (!node || Expression.check(node)) {
         } else if (namedTypes.FunctionDeclaration.check(node) && node.id !== null) {
-          addPattern(path8.get("id"), bindings);
+          addPattern(path10.get("id"), bindings);
         } else if (namedTypes.ClassDeclaration && namedTypes.ClassDeclaration.check(node)) {
-          addPattern(path8.get("id"), bindings);
+          addPattern(path10.get("id"), bindings);
         } else if (ScopeType.check(node)) {
           if (namedTypes.CatchClause.check(node) && // TODO Broaden this to accept any pattern.
           namedTypes.Identifier.check(node.param)) {
             var catchParamName = node.param.name;
             var hadBinding = hasOwn.call(bindings, catchParamName);
-            recursiveScanScope(path8.get("body"), bindings, scopeTypes2);
+            recursiveScanScope(path10.get("body"), bindings, scopeTypes2);
             if (!hadBinding) {
               delete bindings[catchParamName];
             }
           }
         } else {
-          recursiveScanScope(path8, bindings, scopeTypes2);
+          recursiveScanScope(path10, bindings, scopeTypes2);
         }
       }
       function addPattern(patternPath, bindings) {
@@ -27138,9 +27222,9 @@ var require_scope = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/node-path.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/node-path.js
 var require_node_path = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/node-path.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/node-path.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -27398,53 +27482,53 @@ var require_node_path = __commonJS({
       NPp.firstInStatement = function() {
         return firstInStatement(this);
       };
-      function firstInStatement(path8) {
-        for (var node, parent; path8.parent; path8 = path8.parent) {
-          node = path8.node;
-          parent = path8.parent.node;
-          if (n.BlockStatement.check(parent) && path8.parent.name === "body" && path8.name === 0) {
+      function firstInStatement(path10) {
+        for (var node, parent; path10.parent; path10 = path10.parent) {
+          node = path10.node;
+          parent = path10.parent.node;
+          if (n.BlockStatement.check(parent) && path10.parent.name === "body" && path10.name === 0) {
             if (parent.body[0] !== node) {
               throw new Error("Nodes must be equal");
             }
             return true;
           }
-          if (n.ExpressionStatement.check(parent) && path8.name === "expression") {
+          if (n.ExpressionStatement.check(parent) && path10.name === "expression") {
             if (parent.expression !== node) {
               throw new Error("Nodes must be equal");
             }
             return true;
           }
-          if (n.SequenceExpression.check(parent) && path8.parent.name === "expressions" && path8.name === 0) {
+          if (n.SequenceExpression.check(parent) && path10.parent.name === "expressions" && path10.name === 0) {
             if (parent.expressions[0] !== node) {
               throw new Error("Nodes must be equal");
             }
             continue;
           }
-          if (n.CallExpression.check(parent) && path8.name === "callee") {
+          if (n.CallExpression.check(parent) && path10.name === "callee") {
             if (parent.callee !== node) {
               throw new Error("Nodes must be equal");
             }
             continue;
           }
-          if (n.MemberExpression.check(parent) && path8.name === "object") {
+          if (n.MemberExpression.check(parent) && path10.name === "object") {
             if (parent.object !== node) {
               throw new Error("Nodes must be equal");
             }
             continue;
           }
-          if (n.ConditionalExpression.check(parent) && path8.name === "test") {
+          if (n.ConditionalExpression.check(parent) && path10.name === "test") {
             if (parent.test !== node) {
               throw new Error("Nodes must be equal");
             }
             continue;
           }
-          if (isBinary(parent) && path8.name === "left") {
+          if (isBinary(parent) && path10.name === "left") {
             if (parent.left !== node) {
               throw new Error("Nodes must be equal");
             }
             continue;
           }
-          if (n.UnaryExpression.check(parent) && !parent.prefix && path8.name === "argument") {
+          if (n.UnaryExpression.check(parent) && !parent.prefix && path10.name === "argument") {
             if (parent.argument !== node) {
               throw new Error("Nodes must be equal");
             }
@@ -27493,9 +27577,9 @@ var require_node_path = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/path-visitor.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/path-visitor.js
 var require_path_visitor = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/path-visitor.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/path-visitor.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -27614,36 +27698,36 @@ var require_path_visitor = __commonJS({
       };
       PVp.reset = function(_path) {
       };
-      PVp.visitWithoutReset = function(path8) {
+      PVp.visitWithoutReset = function(path10) {
         if (this instanceof this.Context) {
-          return this.visitor.visitWithoutReset(path8);
+          return this.visitor.visitWithoutReset(path10);
         }
-        if (!(path8 instanceof NodePath)) {
+        if (!(path10 instanceof NodePath)) {
           throw new Error("");
         }
-        var value = path8.value;
+        var value = path10.value;
         var methodName = value && typeof value === "object" && typeof value.type === "string" && this._methodNameTable[value.type];
         if (methodName) {
-          var context = this.acquireContext(path8);
+          var context = this.acquireContext(path10);
           try {
             return context.invokeVisitorMethod(methodName);
           } finally {
             this.releaseContext(context);
           }
         } else {
-          return visitChildren(path8, this);
+          return visitChildren(path10, this);
         }
       };
-      function visitChildren(path8, visitor) {
-        if (!(path8 instanceof NodePath)) {
+      function visitChildren(path10, visitor) {
+        if (!(path10 instanceof NodePath)) {
           throw new Error("");
         }
         if (!(visitor instanceof PathVisitor)) {
           throw new Error("");
         }
-        var value = path8.value;
+        var value = path10.value;
         if (isArray2.check(value)) {
-          path8.each(visitor.visitWithoutReset, visitor);
+          path10.each(visitor.visitWithoutReset, visitor);
         } else if (!isObject2.check(value)) {
         } else {
           var childNames = types.getFieldNames(value);
@@ -27657,19 +27741,19 @@ var require_path_visitor = __commonJS({
             if (!hasOwn.call(value, childName)) {
               value[childName] = types.getFieldValue(value, childName);
             }
-            childPaths.push(path8.get(childName));
+            childPaths.push(path10.get(childName));
           }
           for (var i = 0; i < childCount; ++i) {
             visitor.visitWithoutReset(childPaths[i]);
           }
         }
-        return path8.value;
+        return path10.value;
       }
-      PVp.acquireContext = function(path8) {
+      PVp.acquireContext = function(path10) {
         if (this._reusableContextStack.length === 0) {
-          return new this.Context(path8);
+          return new this.Context(path10);
         }
-        return this._reusableContextStack.pop().reset(path8);
+        return this._reusableContextStack.pop().reset(path10);
       };
       PVp.releaseContext = function(context) {
         if (!(context instanceof this.Context)) {
@@ -27685,14 +27769,14 @@ var require_path_visitor = __commonJS({
         return this._changeReported;
       };
       function makeContextConstructor(visitor) {
-        function Context(path8) {
+        function Context(path10) {
           if (!(this instanceof Context)) {
             throw new Error("");
           }
           if (!(this instanceof PathVisitor)) {
             throw new Error("");
           }
-          if (!(path8 instanceof NodePath)) {
+          if (!(path10 instanceof NodePath)) {
             throw new Error("");
           }
           Object.defineProperty(this, "visitor", {
@@ -27701,7 +27785,7 @@ var require_path_visitor = __commonJS({
             enumerable: true,
             configurable: false
           });
-          this.currentPath = path8;
+          this.currentPath = path10;
           this.needToCallTraverse = true;
           Object.seal(this);
         }
@@ -27714,14 +27798,14 @@ var require_path_visitor = __commonJS({
         return Context;
       }
       var sharedContextProtoMethods = /* @__PURE__ */ Object.create(null);
-      sharedContextProtoMethods.reset = function reset(path8) {
+      sharedContextProtoMethods.reset = function reset(path10) {
         if (!(this instanceof this.Context)) {
           throw new Error("");
         }
-        if (!(path8 instanceof NodePath)) {
+        if (!(path10 instanceof NodePath)) {
           throw new Error("");
         }
-        this.currentPath = path8;
+        this.currentPath = path10;
         this.needToCallTraverse = true;
         return this;
       };
@@ -27744,34 +27828,34 @@ var require_path_visitor = __commonJS({
         if (this.needToCallTraverse !== false) {
           throw new Error("Must either call this.traverse or return false in " + methodName);
         }
-        var path8 = this.currentPath;
-        return path8 && path8.value;
+        var path10 = this.currentPath;
+        return path10 && path10.value;
       };
-      sharedContextProtoMethods.traverse = function traverse(path8, newVisitor) {
+      sharedContextProtoMethods.traverse = function traverse(path10, newVisitor) {
         if (!(this instanceof this.Context)) {
           throw new Error("");
         }
-        if (!(path8 instanceof NodePath)) {
+        if (!(path10 instanceof NodePath)) {
           throw new Error("");
         }
         if (!(this.currentPath instanceof NodePath)) {
           throw new Error("");
         }
         this.needToCallTraverse = false;
-        return visitChildren(path8, PathVisitor.fromMethodsObject(newVisitor || this.visitor));
+        return visitChildren(path10, PathVisitor.fromMethodsObject(newVisitor || this.visitor));
       };
-      sharedContextProtoMethods.visit = function visit(path8, newVisitor) {
+      sharedContextProtoMethods.visit = function visit(path10, newVisitor) {
         if (!(this instanceof this.Context)) {
           throw new Error("");
         }
-        if (!(path8 instanceof NodePath)) {
+        if (!(path10 instanceof NodePath)) {
           throw new Error("");
         }
         if (!(this.currentPath instanceof NodePath)) {
           throw new Error("");
         }
         this.needToCallTraverse = false;
-        return PathVisitor.fromMethodsObject(newVisitor || this.visitor).visitWithoutReset(path8);
+        return PathVisitor.fromMethodsObject(newVisitor || this.visitor).visitWithoutReset(path10);
       };
       sharedContextProtoMethods.reportChanged = function reportChanged() {
         this.visitor.reportChanged();
@@ -27787,9 +27871,9 @@ var require_path_visitor = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/equiv.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/equiv.js
 var require_equiv = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/equiv.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/equiv.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -27938,9 +28022,9 @@ var require_equiv = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/fork.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/fork.js
 var require_fork = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/fork.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/fork.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -27996,9 +28080,9 @@ var require_fork = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/shared.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/shared.js
 var require_shared = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/lib/shared.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/lib/shared.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28057,9 +28141,9 @@ var require_shared = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/core.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/core.js
 var require_core = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/core.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/core.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28187,9 +28271,9 @@ var require_core = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es6.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es6.js
 var require_es6 = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es6.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es6.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28252,9 +28336,9 @@ var require_es6 = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es7.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es7.js
 var require_es7 = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es7.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es7.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28279,9 +28363,9 @@ var require_es7 = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es2020.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es2020.js
 var require_es2020 = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es2020.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es2020.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28298,9 +28382,9 @@ var require_es2020 = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/jsx.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/jsx.js
 var require_jsx = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/jsx.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/jsx.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28363,9 +28447,9 @@ var require_jsx = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/type-annotations.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/type-annotations.js
 var require_type_annotations = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/type-annotations.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/type-annotations.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28394,9 +28478,9 @@ var require_type_annotations = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/flow.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/flow.js
 var require_flow = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/flow.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/flow.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28490,9 +28574,9 @@ var require_flow = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/esprima.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/esprima.js
 var require_esprima2 = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/esprima.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/esprima.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28549,9 +28633,9 @@ var require_esprima2 = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/babel-core.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/babel-core.js
 var require_babel_core = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/babel-core.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/babel-core.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28673,9 +28757,9 @@ var require_babel_core = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/babel.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/babel.js
 var require_babel = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/babel.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/babel.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28690,9 +28774,9 @@ var require_babel = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/typescript.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/typescript.js
 var require_typescript = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/typescript.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/typescript.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28849,9 +28933,9 @@ var require_typescript = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es-proposals.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es-proposals.js
 var require_es_proposals = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/def/es-proposals.js"(exports, module2) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/def/es-proposals.js"(exports, module2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var tslib_1 = (init_tslib_es6(), __toCommonJS(tslib_es6_exports));
@@ -28876,9 +28960,9 @@ var require_es_proposals = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/gen/namedTypes.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/gen/namedTypes.js
 var require_namedTypes = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/gen/namedTypes.js"(exports) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/gen/namedTypes.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.namedTypes = void 0;
@@ -28888,9 +28972,9 @@ var require_namedTypes = __commonJS({
   }
 });
 
-// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/main.js
+// .yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/main.js
 var require_main = __commonJS({
-  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-bb0eb8a85e.zip/node_modules/ast-types/main.js"(exports) {
+  ".yarn/cache/ast-types-npm-0.13.4-69f7e68df8-3a1a409764.zip/node_modules/ast-types/main.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.visit = exports.use = exports.Type = exports.someField = exports.PathVisitor = exports.Path = exports.NodePath = exports.namedTypes = exports.getSupertypeNames = exports.getFieldValue = exports.getFieldNames = exports.getBuilderName = exports.finalize = exports.eachField = exports.defineMethod = exports.builtInTypes = exports.builders = exports.astNodesAreEquivalent = void 0;
@@ -28965,22 +29049,22 @@ var require_main = __commonJS({
   }
 });
 
-// .yarn/cache/vm2-patch-e4c2a87b9d-d283b74b74.zip/node_modules/vm2/index.js
+// vm2/index.js
 var require_vm2 = __commonJS({
-  ".yarn/cache/vm2-patch-e4c2a87b9d-d283b74b74.zip/node_modules/vm2/index.js"(exports, module2) {
+  "vm2/index.js"(exports, module2) {
     "use strict";
     module2.exports = {
-      VM: function VM() {
+      VM() {
       },
-      VMScript: function VMScript() {
+      VMScript() {
       }
     };
   }
 });
 
-// .yarn/cache/degenerator-npm-4.0.2-40f6f904e6-99337dd354.zip/node_modules/degenerator/dist/index.js
+// .yarn/cache/degenerator-npm-4.0.4-1f9c4b67eb-c859071a75.zip/node_modules/degenerator/dist/index.js
 var require_dist8 = __commonJS({
-  ".yarn/cache/degenerator-npm-4.0.2-40f6f904e6-99337dd354.zip/node_modules/degenerator/dist/index.js"(exports) {
+  ".yarn/cache/degenerator-npm-4.0.4-1f9c4b67eb-c859071a75.zip/node_modules/degenerator/dist/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.compile = exports.degenerator = void 0;
@@ -28999,10 +29083,10 @@ var require_dist8 = __commonJS({
       do {
         lastNamesLength = names.length;
         (0, ast_types_1.visit)(ast, {
-          visitVariableDeclaration(path8) {
-            if (path8.node.declarations) {
-              for (let i = 0; i < path8.node.declarations.length; i++) {
-                const declaration = path8.node.declarations[i];
+          visitVariableDeclaration(path10) {
+            if (path10.node.declarations) {
+              for (let i = 0; i < path10.node.declarations.length; i++) {
+                const declaration = path10.node.declarations[i];
                 if (ast_types_1.namedTypes.VariableDeclarator.check(declaration) && ast_types_1.namedTypes.Identifier.check(declaration.init) && ast_types_1.namedTypes.Identifier.check(declaration.id) && checkName(declaration.init.name, names) && !checkName(declaration.id.name, names)) {
                   names.push(declaration.id.name);
                 }
@@ -29010,18 +29094,18 @@ var require_dist8 = __commonJS({
             }
             return false;
           },
-          visitAssignmentExpression(path8) {
-            if (ast_types_1.namedTypes.Identifier.check(path8.node.left) && ast_types_1.namedTypes.Identifier.check(path8.node.right) && checkName(path8.node.right.name, names) && !checkName(path8.node.left.name, names)) {
-              names.push(path8.node.left.name);
+          visitAssignmentExpression(path10) {
+            if (ast_types_1.namedTypes.Identifier.check(path10.node.left) && ast_types_1.namedTypes.Identifier.check(path10.node.right) && checkName(path10.node.right.name, names) && !checkName(path10.node.left.name, names)) {
+              names.push(path10.node.left.name);
             }
             return false;
           },
-          visitFunction(path8) {
-            if (path8.node.id) {
+          visitFunction(path10) {
+            if (path10.node.id) {
               let shouldDegenerate = false;
-              (0, ast_types_1.visit)(path8.node, {
-                visitCallExpression(path9) {
-                  if (checkNames(path9.node, names)) {
+              (0, ast_types_1.visit)(path10.node, {
+                visitCallExpression(path11) {
+                  if (checkNames(path11.node, names)) {
                     shouldDegenerate = true;
                   }
                   return false;
@@ -29030,28 +29114,28 @@ var require_dist8 = __commonJS({
               if (!shouldDegenerate) {
                 return false;
               }
-              path8.node.async = true;
-              if (!checkName(path8.node.id.name, names)) {
-                names.push(path8.node.id.name);
+              path10.node.async = true;
+              if (!checkName(path10.node.id.name, names)) {
+                names.push(path10.node.id.name);
               }
             }
-            this.traverse(path8);
+            this.traverse(path10);
           }
         });
       } while (lastNamesLength !== names.length);
       (0, ast_types_1.visit)(ast, {
-        visitCallExpression(path8) {
-          if (checkNames(path8.node, names)) {
+        visitCallExpression(path10) {
+          if (checkNames(path10.node, names)) {
             const delegate = false;
-            const { name, parent: { node: pNode } } = path8;
-            const expr = ast_types_1.builders.awaitExpression(path8.node, delegate);
+            const { name, parent: { node: pNode } } = path10;
+            const expr = ast_types_1.builders.awaitExpression(path10.node, delegate);
             if (ast_types_1.namedTypes.CallExpression.check(pNode)) {
               pNode.arguments[name] = expr;
             } else {
               pNode[name] = expr;
             }
           }
-          this.traverse(path8);
+          this.traverse(path10);
         }
       });
       return (0, escodegen_1.generate)(ast);
@@ -29122,9 +29206,9 @@ var require_dist8 = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dateRange.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dateRange.js
 var require_dateRange = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dateRange.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dateRange.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function dateRange() {
@@ -29134,9 +29218,9 @@ var require_dateRange = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dnsDomainIs.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dnsDomainIs.js
 var require_dnsDomainIs = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dnsDomainIs.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dnsDomainIs.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function dnsDomainIs(host, domain) {
@@ -29148,9 +29232,9 @@ var require_dnsDomainIs = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dnsDomainLevels.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dnsDomainLevels.js
 var require_dnsDomainLevels = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dnsDomainLevels.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dnsDomainLevels.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function dnsDomainLevels(host) {
@@ -29165,9 +29249,9 @@ var require_dnsDomainLevels = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/util.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/util.js
 var require_util3 = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/util.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/util.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.isGMT = exports.dnsLookup = void 0;
@@ -29191,9 +29275,9 @@ var require_util3 = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dnsResolve.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dnsResolve.js
 var require_dnsResolve = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/dnsResolve.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/dnsResolve.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util3();
@@ -29212,9 +29296,9 @@ var require_dnsResolve = __commonJS({
   }
 });
 
-// .yarn/cache/netmask-npm-2.0.2-2299510a4d-ba4edae75a.zip/node_modules/netmask/lib/netmask.js
+// .yarn/cache/netmask-npm-2.0.2-2299510a4d-cafd28388e.zip/node_modules/netmask/lib/netmask.js
 var require_netmask = __commonJS({
-  ".yarn/cache/netmask-npm-2.0.2-2299510a4d-ba4edae75a.zip/node_modules/netmask/lib/netmask.js"(exports) {
+  ".yarn/cache/netmask-npm-2.0.2-2299510a4d-cafd28388e.zip/node_modules/netmask/lib/netmask.js"(exports) {
     (function() {
       var Netmask, atob, chr, chr0, chrA, chra, ip2long, long2ip;
       long2ip = function(long) {
@@ -29407,9 +29491,9 @@ var require_netmask = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/isInNet.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/isInNet.js
 var require_isInNet = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/isInNet.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/isInNet.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var netmask_1 = require_netmask();
@@ -29430,9 +29514,9 @@ var require_isInNet = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/isPlainHostName.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/isPlainHostName.js
 var require_isPlainHostName = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/isPlainHostName.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/isPlainHostName.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function isPlainHostName(host) {
@@ -29442,9 +29526,9 @@ var require_isPlainHostName = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/isResolvable.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/isResolvable.js
 var require_isResolvable = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/isResolvable.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/isResolvable.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util3();
@@ -29462,9 +29546,9 @@ var require_isResolvable = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/localHostOrDomainIs.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/localHostOrDomainIs.js
 var require_localHostOrDomainIs = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/localHostOrDomainIs.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/localHostOrDomainIs.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function localHostOrDomainIs(host, hostdom) {
@@ -29483,12 +29567,12 @@ var require_localHostOrDomainIs = __commonJS({
   }
 });
 
-// .yarn/cache/ip-npm-1.1.8-abea558b72-bb1850e7b6.zip/node_modules/ip/lib/ip.js
+// .yarn/cache/ip-npm-1.1.8-abea558b72-ab32a5ecfa.zip/node_modules/ip/lib/ip.js
 var require_ip2 = __commonJS({
-  ".yarn/cache/ip-npm-1.1.8-abea558b72-bb1850e7b6.zip/node_modules/ip/lib/ip.js"(exports) {
+  ".yarn/cache/ip-npm-1.1.8-abea558b72-ab32a5ecfa.zip/node_modules/ip/lib/ip.js"(exports) {
     var ip = exports;
     var { Buffer: Buffer2 } = require("buffer");
-    var os2 = require("os");
+    var os3 = require("os");
     ip.toBuffer = function(ip2, buff, offset) {
       offset = ~~offset;
       var result;
@@ -29748,7 +29832,7 @@ var require_ip2 = __commonJS({
       return family === "ipv4" ? "127.0.0.1" : "fe80::1";
     };
     ip.address = function(name, family) {
-      var interfaces = os2.networkInterfaces();
+      var interfaces = os3.networkInterfaces();
       family = _normalizeFamily(family);
       if (name && name !== "private" && name !== "public") {
         var res = interfaces[name].filter((details) => {
@@ -29789,9 +29873,9 @@ var require_ip2 = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/myIpAddress.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/myIpAddress.js
 var require_myIpAddress = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/myIpAddress.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/myIpAddress.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -29824,9 +29908,9 @@ var require_myIpAddress = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/shExpMatch.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/shExpMatch.js
 var require_shExpMatch = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/shExpMatch.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/shExpMatch.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function shExpMatch(str, shexp) {
@@ -29841,9 +29925,9 @@ var require_shExpMatch = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/timeRange.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/timeRange.js
 var require_timeRange = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/timeRange.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/timeRange.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     function timeRange() {
@@ -29888,9 +29972,9 @@ var require_timeRange = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/weekdayRange.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/weekdayRange.js
 var require_weekdayRange = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/weekdayRange.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/weekdayRange.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var util_1 = require_util3();
@@ -29936,9 +30020,9 @@ var require_weekdayRange = __commonJS({
   }
 });
 
-// .yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/index.js
+// .yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/index.js
 var require_dist9 = __commonJS({
-  ".yarn/cache/pac-resolver-npm-6.0.1-a28b1bcfbc-cbe90f8f12.zip/node_modules/pac-resolver/dist/index.js"(exports) {
+  ".yarn/cache/pac-resolver-npm-6.0.2-9e9298321a-7032496b35.zip/node_modules/pac-resolver/dist/index.js"(exports) {
     "use strict";
     var __importDefault2 = exports && exports.__importDefault || function(mod) {
       return mod && mod.__esModule ? mod : { "default": mod };
@@ -30013,9 +30097,9 @@ var require_dist9 = __commonJS({
   }
 });
 
-// .yarn/cache/pac-proxy-agent-npm-6.0.2-b8b621b262-0b263da7a6.zip/node_modules/pac-proxy-agent/dist/index.js
+// .yarn/cache/pac-proxy-agent-npm-6.0.4-fab524db53-810aaaac1b.zip/node_modules/pac-proxy-agent/dist/index.js
 var require_dist10 = __commonJS({
-  ".yarn/cache/pac-proxy-agent-npm-6.0.2-b8b621b262-0b263da7a6.zip/node_modules/pac-proxy-agent/dist/index.js"(exports) {
+  ".yarn/cache/pac-proxy-agent-npm-6.0.4-fab524db53-810aaaac1b.zip/node_modules/pac-proxy-agent/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -30139,17 +30223,17 @@ var require_dist10 = __commonJS({
         const { secureEndpoint } = opts;
         const resolver = await this.getResolver();
         const defaultPort = secureEndpoint ? 443 : 80;
-        let path8 = req.path;
+        let path10 = req.path;
         let search = null;
-        const firstQuestion = path8.indexOf("?");
+        const firstQuestion = path10.indexOf("?");
         if (firstQuestion !== -1) {
-          search = path8.substring(firstQuestion);
-          path8 = path8.substring(0, firstQuestion);
+          search = path10.substring(firstQuestion);
+          path10 = path10.substring(0, firstQuestion);
         }
         const urlOpts = {
           ...opts,
           protocol: secureEndpoint ? "https:" : "http:",
-          pathname: path8,
+          pathname: path10,
           search,
           // need to use `hostname` instead of `host` otherwise `port` is ignored
           hostname: opts.host,
@@ -30219,19 +30303,19 @@ var require_dist10 = __commonJS({
       }
     };
     PacProxyAgent.protocols = [
-      "pac-data",
-      "pac-file",
-      "pac-ftp",
-      "pac-http",
-      "pac-https"
+      "pac+data",
+      "pac+file",
+      "pac+ftp",
+      "pac+http",
+      "pac+https"
     ];
     exports.PacProxyAgent = PacProxyAgent;
   }
 });
 
-// .yarn/cache/proxy-agent-npm-6.2.0-ad375074b5-bd8415b36a.zip/node_modules/proxy-agent/dist/index.js
+// .yarn/cache/proxy-agent-npm-6.2.2-678133ab7b-51121cb190.zip/node_modules/proxy-agent/dist/index.js
 var require_dist11 = __commonJS({
-  ".yarn/cache/proxy-agent-npm-6.2.0-ad375074b5-bd8415b36a.zip/node_modules/proxy-agent/dist/index.js"(exports) {
+  ".yarn/cache/proxy-agent-npm-6.2.2-678133ab7b-51121cb190.zip/node_modules/proxy-agent/dist/index.js"(exports) {
     "use strict";
     var __createBinding2 = exports && exports.__createBinding || (Object.create ? function(o, m, k, k2) {
       if (k2 === void 0)
@@ -30294,11 +30378,11 @@ var require_dist11 = __commonJS({
       socks4a: [socks_proxy_agent_1.SocksProxyAgent, socks_proxy_agent_1.SocksProxyAgent],
       socks5: [socks_proxy_agent_1.SocksProxyAgent, socks_proxy_agent_1.SocksProxyAgent],
       socks5h: [socks_proxy_agent_1.SocksProxyAgent, socks_proxy_agent_1.SocksProxyAgent],
-      "pac-data": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
-      "pac-file": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
-      "pac-ftp": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
-      "pac-http": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
-      "pac-https": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent]
+      "pac+data": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
+      "pac+file": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
+      "pac+ftp": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
+      "pac+http": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent],
+      "pac+https": [pac_proxy_agent_1.PacProxyAgent, pac_proxy_agent_1.PacProxyAgent]
     };
     function isValidProtocol(v) {
       return PROTOCOLS.includes(v);
@@ -30315,7 +30399,8 @@ var require_dist11 = __commonJS({
       }
       async connect(req, opts) {
         const { secureEndpoint } = opts;
-        const protocol = secureEndpoint ? "https:" : "http:";
+        const isWebSocket = req.getHeader("upgrade") === "websocket";
+        const protocol = secureEndpoint ? isWebSocket ? "wss:" : "https:" : isWebSocket ? "ws:" : "http:";
         const host = req.getHeader("host");
         const url = new URL(req.path, `${protocol}//${host}`).href;
         const proxy = this.getProxyForUrl(url);
@@ -30333,7 +30418,7 @@ var require_dist11 = __commonJS({
           if (!isValidProtocol(proxyProto)) {
             throw new Error(`Unsupported protocol for proxy URL: ${proxy}`);
           }
-          const ctor = exports.proxies[proxyProto][secureEndpoint ? 1 : 0];
+          const ctor = exports.proxies[proxyProto][secureEndpoint || isWebSocket ? 1 : 0];
           agent = new ctor(proxy, this.connectOpts);
           this.cache.set(cacheKey, agent);
         } else {
@@ -30352,9 +30437,9 @@ var require_dist11 = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/high-level-opt.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/high-level-opt.js
 var require_high_level_opt = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/high-level-opt.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/high-level-opt.js"(exports, module2) {
     "use strict";
     var argmap = /* @__PURE__ */ new Map([
       ["C", "cwd"],
@@ -30384,9 +30469,9 @@ var require_high_level_opt = __commonJS({
   }
 });
 
-// .yarn/cache/minipass-npm-5.0.0-c64fb63c92-dac2e19609.zip/node_modules/minipass/index.js
+// .yarn/cache/minipass-npm-5.0.0-c64fb63c92-a91d8043f6.zip/node_modules/minipass/index.js
 var require_minipass = __commonJS({
-  ".yarn/cache/minipass-npm-5.0.0-c64fb63c92-dac2e19609.zip/node_modules/minipass/index.js"(exports) {
+  ".yarn/cache/minipass-npm-5.0.0-c64fb63c92-a91d8043f6.zip/node_modules/minipass/index.js"(exports) {
     "use strict";
     var proc = typeof process === "object" && process ? process : {
       stdout: null,
@@ -30991,9 +31076,9 @@ var require_minipass = __commonJS({
   }
 });
 
-// .yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-c0071edb24.zip/node_modules/minizlib/constants.js
+// .yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-64fae024e1.zip/node_modules/minizlib/constants.js
 var require_constants3 = __commonJS({
-  ".yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-c0071edb24.zip/node_modules/minizlib/constants.js"(exports, module2) {
+  ".yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-64fae024e1.zip/node_modules/minizlib/constants.js"(exports, module2) {
     var realZlibConstants = require("zlib").constants || /* istanbul ignore next */
     { ZLIB_VERNUM: 4736 };
     module2.exports = Object.freeze(Object.assign(/* @__PURE__ */ Object.create(null), {
@@ -31107,9 +31192,9 @@ var require_constants3 = __commonJS({
   }
 });
 
-// .yarn/cache/minipass-npm-3.3.6-b8d93a945b-9704cf677a.zip/node_modules/minipass/index.js
+// .yarn/cache/minipass-npm-3.3.6-b8d93a945b-a114746943.zip/node_modules/minipass/index.js
 var require_minipass2 = __commonJS({
-  ".yarn/cache/minipass-npm-3.3.6-b8d93a945b-9704cf677a.zip/node_modules/minipass/index.js"(exports, module2) {
+  ".yarn/cache/minipass-npm-3.3.6-b8d93a945b-a114746943.zip/node_modules/minipass/index.js"(exports, module2) {
     "use strict";
     var proc = typeof process === "object" && process ? process : {
       stdout: null,
@@ -31631,9 +31716,9 @@ var require_minipass2 = __commonJS({
   }
 });
 
-// .yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-c0071edb24.zip/node_modules/minizlib/index.js
+// .yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-64fae024e1.zip/node_modules/minizlib/index.js
 var require_minizlib = __commonJS({
-  ".yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-c0071edb24.zip/node_modules/minizlib/index.js"(exports) {
+  ".yarn/cache/minizlib-npm-2.1.2-ea89cd0cfb-64fae024e1.zip/node_modules/minizlib/index.js"(exports) {
     "use strict";
     var assert2 = require("assert");
     var Buffer2 = require("buffer").Buffer;
@@ -31895,17 +31980,17 @@ var require_minizlib = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/normalize-windows-path.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/normalize-windows-path.js
 var require_normalize_windows_path = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/normalize-windows-path.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/normalize-windows-path.js"(exports, module2) {
     var platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
     module2.exports = platform !== "win32" ? (p) => p : (p) => p && p.replace(/\\/g, "/");
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/read-entry.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/read-entry.js
 var require_read_entry = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/read-entry.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/read-entry.js"(exports, module2) {
     "use strict";
     var { Minipass } = require_minipass();
     var normPath = require_normalize_windows_path();
@@ -31997,9 +32082,9 @@ var require_read_entry = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/types.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/types.js
 var require_types2 = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/types.js"(exports) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/types.js"(exports) {
     "use strict";
     exports.name = /* @__PURE__ */ new Map([
       ["0", "File"],
@@ -32044,9 +32129,9 @@ var require_types2 = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/large-numbers.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/large-numbers.js
 var require_large_numbers = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/large-numbers.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/large-numbers.js"(exports, module2) {
     "use strict";
     var encode = (num, buf) => {
       if (!Number.isSafeInteger(num)) {
@@ -32134,9 +32219,9 @@ var require_large_numbers = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/header.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/header.js
 var require_header = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/header.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/header.js"(exports, module2) {
     "use strict";
     var types = require_types2();
     var pathModule = require("path").posix;
@@ -32246,10 +32331,10 @@ var require_header = __commonJS({
         }
         const prefixSize = this.ctime || this.atime ? 130 : 155;
         const split = splitPrefix(this.path || "", prefixSize);
-        const path8 = split[0];
+        const path10 = split[0];
         const prefix = split[1];
         this.needPax = split[2];
-        this.needPax = encString(buf, off, 100, path8) || this.needPax;
+        this.needPax = encString(buf, off, 100, path10) || this.needPax;
         this.needPax = encNumber(buf, off + 100, 8, this.mode) || this.needPax;
         this.needPax = encNumber(buf, off + 108, 8, this.uid) || this.needPax;
         this.needPax = encNumber(buf, off + 116, 8, this.gid) || this.needPax;
@@ -32354,12 +32439,12 @@ var require_header = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/pax.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/pax.js
 var require_pax = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/pax.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/pax.js"(exports, module2) {
     "use strict";
     var Header = require_header();
-    var path8 = require("path");
+    var path10 = require("path");
     var Pax = class {
       constructor(obj, global2) {
         this.atime = obj.atime || null;
@@ -32394,7 +32479,7 @@ var require_pax = __commonJS({
           // XXX split the path
           // then the path should be PaxHeader + basename, but less than 99,
           // prepend with the dirname
-          path: ("PaxHeader/" + path8.basename(this.path)).slice(0, 99),
+          path: ("PaxHeader/" + path10.basename(this.path)).slice(0, 99),
           mode: this.mode || 420,
           uid: this.uid || null,
           gid: this.gid || null,
@@ -32455,9 +32540,9 @@ var require_pax = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/strip-trailing-slashes.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/strip-trailing-slashes.js
 var require_strip_trailing_slashes = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/strip-trailing-slashes.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/strip-trailing-slashes.js"(exports, module2) {
     module2.exports = (str) => {
       let i = str.length - 1;
       let slashesStart = -1;
@@ -32470,9 +32555,9 @@ var require_strip_trailing_slashes = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/warn-mixin.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/warn-mixin.js
 var require_warn_mixin = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/warn-mixin.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/warn-mixin.js"(exports, module2) {
     "use strict";
     module2.exports = (Base) => class extends Base {
       warn(code, message, data = {}) {
@@ -32500,9 +32585,9 @@ var require_warn_mixin = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/winchars.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/winchars.js
 var require_winchars = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/winchars.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/winchars.js"(exports, module2) {
     "use strict";
     var raw = [
       "|",
@@ -32521,27 +32606,27 @@ var require_winchars = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/strip-absolute-path.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/strip-absolute-path.js
 var require_strip_absolute_path = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/strip-absolute-path.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/strip-absolute-path.js"(exports, module2) {
     var { isAbsolute, parse } = require("path").win32;
-    module2.exports = (path8) => {
+    module2.exports = (path10) => {
       let r = "";
-      let parsed = parse(path8);
-      while (isAbsolute(path8) || parsed.root) {
-        const root = path8.charAt(0) === "/" && path8.slice(0, 4) !== "//?/" ? "/" : parsed.root;
-        path8 = path8.slice(root.length);
+      let parsed = parse(path10);
+      while (isAbsolute(path10) || parsed.root) {
+        const root = path10.charAt(0) === "/" && path10.slice(0, 4) !== "//?/" ? "/" : parsed.root;
+        path10 = path10.slice(root.length);
         r += root;
-        parsed = parse(path8);
+        parsed = parse(path10);
       }
-      return [r, path8];
+      return [r, path10];
     };
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/mode-fix.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/mode-fix.js
 var require_mode_fix = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/mode-fix.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/mode-fix.js"(exports, module2) {
     "use strict";
     module2.exports = (mode, isDir, portable) => {
       mode &= 4095;
@@ -32564,23 +32649,23 @@ var require_mode_fix = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/write-entry.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/write-entry.js
 var require_write_entry = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/write-entry.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/write-entry.js"(exports, module2) {
     "use strict";
     var { Minipass } = require_minipass();
     var Pax = require_pax();
     var Header = require_header();
-    var fs6 = require("fs");
-    var path8 = require("path");
+    var fs8 = require("fs");
+    var path10 = require("path");
     var normPath = require_normalize_windows_path();
     var stripSlash = require_strip_trailing_slashes();
-    var prefixPath = (path9, prefix) => {
+    var prefixPath = (path11, prefix) => {
       if (!prefix) {
-        return normPath(path9);
+        return normPath(path11);
       }
-      path9 = normPath(path9).replace(/^\.(\/|$)/, "");
-      return stripSlash(prefix) + "/" + path9;
+      path11 = normPath(path11).replace(/^\.(\/|$)/, "");
+      return stripSlash(prefix) + "/" + path11;
     };
     var maxReadSize = 16 * 1024 * 1024;
     var PROCESS = Symbol("process");
@@ -32651,7 +32736,7 @@ var require_write_entry = __commonJS({
           this.path = winchars.decode(this.path.replace(/\\/g, "/"));
           p = p.replace(/\\/g, "/");
         }
-        this.absolute = normPath(opt.absolute || path8.resolve(this.cwd, p));
+        this.absolute = normPath(opt.absolute || path10.resolve(this.cwd, p));
         if (this.path === "") {
           this.path = "./";
         }
@@ -32674,7 +32759,7 @@ var require_write_entry = __commonJS({
         return super.emit(ev, ...data);
       }
       [LSTAT]() {
-        fs6.lstat(this.absolute, (er, stat) => {
+        fs8.lstat(this.absolute, (er, stat) => {
           if (er) {
             return this.emit("error", er);
           }
@@ -32706,8 +32791,8 @@ var require_write_entry = __commonJS({
       [MODE](mode) {
         return modeFix(mode, this.type === "Directory", this.portable);
       }
-      [PREFIX](path9) {
-        return prefixPath(path9, this.prefix);
+      [PREFIX](path11) {
+        return prefixPath(path11, this.prefix);
       }
       [HEADER]() {
         if (this.type === "Directory" && this.portable) {
@@ -32756,7 +32841,7 @@ var require_write_entry = __commonJS({
         this.end();
       }
       [SYMLINK]() {
-        fs6.readlink(this.absolute, (er, linkpath) => {
+        fs8.readlink(this.absolute, (er, linkpath) => {
           if (er) {
             return this.emit("error", er);
           }
@@ -32770,7 +32855,7 @@ var require_write_entry = __commonJS({
       }
       [HARDLINK](linkpath) {
         this.type = "Link";
-        this.linkpath = normPath(path8.relative(this.cwd, linkpath));
+        this.linkpath = normPath(path10.relative(this.cwd, linkpath));
         this.stat.size = 0;
         this[HEADER]();
         this.end();
@@ -32793,7 +32878,7 @@ var require_write_entry = __commonJS({
         this[OPENFILE]();
       }
       [OPENFILE]() {
-        fs6.open(this.absolute, "r", (er, fd) => {
+        fs8.open(this.absolute, "r", (er, fd) => {
           if (er) {
             return this.emit("error", er);
           }
@@ -32817,7 +32902,7 @@ var require_write_entry = __commonJS({
       }
       [READ]() {
         const { fd, buf, offset, length, pos } = this;
-        fs6.read(fd, buf, offset, length, pos, (er, bytesRead) => {
+        fs8.read(fd, buf, offset, length, pos, (er, bytesRead) => {
           if (er) {
             return this[CLOSE](() => this.emit("error", er));
           }
@@ -32825,7 +32910,7 @@ var require_write_entry = __commonJS({
         });
       }
       [CLOSE](cb) {
-        fs6.close(this.fd, cb);
+        fs8.close(this.fd, cb);
       }
       [ONREAD](bytesRead) {
         if (bytesRead <= 0 && this.remain > 0) {
@@ -32889,19 +32974,19 @@ var require_write_entry = __commonJS({
     });
     var WriteEntrySync = class extends WriteEntry {
       [LSTAT]() {
-        this[ONLSTAT](fs6.lstatSync(this.absolute));
+        this[ONLSTAT](fs8.lstatSync(this.absolute));
       }
       [SYMLINK]() {
-        this[ONREADLINK](fs6.readlinkSync(this.absolute));
+        this[ONREADLINK](fs8.readlinkSync(this.absolute));
       }
       [OPENFILE]() {
-        this[ONOPENFILE](fs6.openSync(this.absolute, "r"));
+        this[ONOPENFILE](fs8.openSync(this.absolute, "r"));
       }
       [READ]() {
         let threw = true;
         try {
           const { fd, buf, offset, length, pos } = this;
-          const bytesRead = fs6.readSync(fd, buf, offset, length, pos);
+          const bytesRead = fs8.readSync(fd, buf, offset, length, pos);
           this[ONREAD](bytesRead);
           threw = false;
         } finally {
@@ -32918,7 +33003,7 @@ var require_write_entry = __commonJS({
         cb();
       }
       [CLOSE](cb) {
-        fs6.closeSync(this.fd);
+        fs8.closeSync(this.fd);
         cb();
       }
     };
@@ -33001,8 +33086,8 @@ var require_write_entry = __commonJS({
         super.write(this.header.block);
         readEntry.pipe(this);
       }
-      [PREFIX](path9) {
-        return prefixPath(path9, this.prefix);
+      [PREFIX](path11) {
+        return prefixPath(path11, this.prefix);
       }
       [MODE](mode) {
         return modeFix(mode, this.type === "Directory", this.portable);
@@ -33029,13 +33114,13 @@ var require_write_entry = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/pack.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/pack.js
 var require_pack = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/pack.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/pack.js"(exports, module2) {
     "use strict";
     var PackJob = class {
-      constructor(path9, absolute) {
-        this.path = path9 || "./";
+      constructor(path11, absolute) {
+        this.path = path11 || "./";
         this.absolute = absolute;
         this.entry = null;
         this.stat = null;
@@ -33073,8 +33158,8 @@ var require_pack = __commonJS({
     var WRITEENTRYCLASS = Symbol("writeEntryClass");
     var WRITE = Symbol("write");
     var ONDRAIN = Symbol("ondrain");
-    var fs6 = require("fs");
-    var path8 = require("path");
+    var fs8 = require("fs");
+    var path10 = require("path");
     var warner = require_warn_mixin();
     var normPath = require_normalize_windows_path();
     var Pack = warner(class Pack extends Minipass {
@@ -33127,31 +33212,31 @@ var require_pack = __commonJS({
       [WRITE](chunk) {
         return super.write(chunk);
       }
-      add(path9) {
-        this.write(path9);
+      add(path11) {
+        this.write(path11);
         return this;
       }
-      end(path9) {
-        if (path9) {
-          this.write(path9);
+      end(path11) {
+        if (path11) {
+          this.write(path11);
         }
         this[ENDED] = true;
         this[PROCESS]();
         return this;
       }
-      write(path9) {
+      write(path11) {
         if (this[ENDED]) {
           throw new Error("write after end");
         }
-        if (path9 instanceof ReadEntry) {
-          this[ADDTARENTRY](path9);
+        if (path11 instanceof ReadEntry) {
+          this[ADDTARENTRY](path11);
         } else {
-          this[ADDFSENTRY](path9);
+          this[ADDFSENTRY](path11);
         }
         return this.flowing;
       }
       [ADDTARENTRY](p) {
-        const absolute = normPath(path8.resolve(this.cwd, p.path));
+        const absolute = normPath(path10.resolve(this.cwd, p.path));
         if (!this.filter(p.path, p)) {
           p.resume();
         } else {
@@ -33164,7 +33249,7 @@ var require_pack = __commonJS({
         this[PROCESS]();
       }
       [ADDFSENTRY](p) {
-        const absolute = normPath(path8.resolve(this.cwd, p));
+        const absolute = normPath(path10.resolve(this.cwd, p));
         this[QUEUE].push(new PackJob(p, absolute));
         this[PROCESS]();
       }
@@ -33172,7 +33257,7 @@ var require_pack = __commonJS({
         job.pending = true;
         this[JOBS] += 1;
         const stat = this.follow ? "stat" : "lstat";
-        fs6[stat](job.absolute, (er, stat2) => {
+        fs8[stat](job.absolute, (er, stat2) => {
           job.pending = false;
           this[JOBS] -= 1;
           if (er) {
@@ -33193,7 +33278,7 @@ var require_pack = __commonJS({
       [READDIR](job) {
         job.pending = true;
         this[JOBS] += 1;
-        fs6.readdir(job.absolute, (er, entries) => {
+        fs8.readdir(job.absolute, (er, entries) => {
           job.pending = false;
           this[JOBS] -= 1;
           if (er) {
@@ -33355,10 +33440,10 @@ var require_pack = __commonJS({
       }
       [STAT](job) {
         const stat = this.follow ? "statSync" : "lstatSync";
-        this[ONSTAT](job, fs6[stat](job.absolute));
+        this[ONSTAT](job, fs8[stat](job.absolute));
       }
       [READDIR](job, stat) {
-        this[ONREADDIR](job, fs6.readdirSync(job.absolute));
+        this[ONREADDIR](job, fs8.readdirSync(job.absolute));
       }
       // gotta get it all in this tick
       [PIPE](job) {
@@ -33387,14 +33472,14 @@ var require_pack = __commonJS({
   }
 });
 
-// .yarn/cache/fs-minipass-npm-2.1.0-501ef87306-56d19f9a03.zip/node_modules/fs-minipass/index.js
+// .yarn/cache/fs-minipass-npm-2.1.0-501ef87306-703d16522b.zip/node_modules/fs-minipass/index.js
 var require_fs_minipass = __commonJS({
-  ".yarn/cache/fs-minipass-npm-2.1.0-501ef87306-56d19f9a03.zip/node_modules/fs-minipass/index.js"(exports) {
+  ".yarn/cache/fs-minipass-npm-2.1.0-501ef87306-703d16522b.zip/node_modules/fs-minipass/index.js"(exports) {
     "use strict";
     var MiniPass = require_minipass2();
     var EE = require("events").EventEmitter;
-    var fs6 = require("fs");
-    var writev = fs6.writev;
+    var fs8 = require("fs");
+    var writev = fs8.writev;
     if (!writev) {
       const binding = process.binding("fs");
       const FSReqWrap = binding.FSReqWrap || binding.FSReqCallback;
@@ -33434,16 +33519,16 @@ var require_fs_minipass = __commonJS({
     var _defaultFlag = Symbol("_defaultFlag");
     var _errored = Symbol("_errored");
     var ReadStream = class extends MiniPass {
-      constructor(path8, opt) {
+      constructor(path10, opt) {
         opt = opt || {};
         super(opt);
         this.readable = true;
         this.writable = false;
-        if (typeof path8 !== "string")
+        if (typeof path10 !== "string")
           throw new TypeError("path must be a string");
         this[_errored] = false;
         this[_fd] = typeof opt.fd === "number" ? opt.fd : null;
-        this[_path] = path8;
+        this[_path] = path10;
         this[_readSize] = opt.readSize || 16 * 1024 * 1024;
         this[_reading] = false;
         this[_size] = typeof opt.size === "number" ? opt.size : Infinity;
@@ -33467,7 +33552,7 @@ var require_fs_minipass = __commonJS({
         throw new TypeError("this is a readable stream");
       }
       [_open]() {
-        fs6.open(this[_path], "r", (er, fd) => this[_onopen](er, fd));
+        fs8.open(this[_path], "r", (er, fd) => this[_onopen](er, fd));
       }
       [_onopen](er, fd) {
         if (er)
@@ -33487,7 +33572,7 @@ var require_fs_minipass = __commonJS({
           const buf = this[_makeBuf]();
           if (buf.length === 0)
             return process.nextTick(() => this[_onread](null, 0, buf));
-          fs6.read(this[_fd], buf, 0, buf.length, null, (er, br, buf2) => this[_onread](er, br, buf2));
+          fs8.read(this[_fd], buf, 0, buf.length, null, (er, br, buf2) => this[_onread](er, br, buf2));
         }
       }
       [_onread](er, br, buf) {
@@ -33501,7 +33586,7 @@ var require_fs_minipass = __commonJS({
         if (this[_autoClose] && typeof this[_fd] === "number") {
           const fd = this[_fd];
           this[_fd] = null;
-          fs6.close(fd, (er) => er ? this.emit("error", er) : this.emit("close"));
+          fs8.close(fd, (er) => er ? this.emit("error", er) : this.emit("close"));
         }
       }
       [_onerror](er) {
@@ -33544,7 +33629,7 @@ var require_fs_minipass = __commonJS({
       [_open]() {
         let threw = true;
         try {
-          this[_onopen](null, fs6.openSync(this[_path], "r"));
+          this[_onopen](null, fs8.openSync(this[_path], "r"));
           threw = false;
         } finally {
           if (threw)
@@ -33558,7 +33643,7 @@ var require_fs_minipass = __commonJS({
             this[_reading] = true;
             do {
               const buf = this[_makeBuf]();
-              const br = buf.length === 0 ? 0 : fs6.readSync(this[_fd], buf, 0, buf.length, null);
+              const br = buf.length === 0 ? 0 : fs8.readSync(this[_fd], buf, 0, buf.length, null);
               if (!this[_handleChunk](br, buf))
                 break;
             } while (true);
@@ -33574,13 +33659,13 @@ var require_fs_minipass = __commonJS({
         if (this[_autoClose] && typeof this[_fd] === "number") {
           const fd = this[_fd];
           this[_fd] = null;
-          fs6.closeSync(fd);
+          fs8.closeSync(fd);
           this.emit("close");
         }
       }
     };
     var WriteStream = class extends EE {
-      constructor(path8, opt) {
+      constructor(path10, opt) {
         opt = opt || {};
         super(opt);
         this.readable = false;
@@ -33590,7 +33675,7 @@ var require_fs_minipass = __commonJS({
         this[_ended] = false;
         this[_needDrain] = false;
         this[_queue] = [];
-        this[_path] = path8;
+        this[_path] = path10;
         this[_fd] = typeof opt.fd === "number" ? opt.fd : null;
         this[_mode] = opt.mode === void 0 ? 438 : opt.mode;
         this[_pos] = typeof opt.start === "number" ? opt.start : null;
@@ -33621,7 +33706,7 @@ var require_fs_minipass = __commonJS({
         this.emit("error", er);
       }
       [_open]() {
-        fs6.open(
+        fs8.open(
           this[_path],
           this[_flags],
           this[_mode],
@@ -33665,7 +33750,7 @@ var require_fs_minipass = __commonJS({
         return true;
       }
       [_write](buf) {
-        fs6.write(this[_fd], buf, 0, buf.length, this[_pos], (er, bw) => this[_onwrite](er, bw));
+        fs8.write(this[_fd], buf, 0, buf.length, this[_pos], (er, bw) => this[_onwrite](er, bw));
       }
       [_onwrite](er, bw) {
         if (er)
@@ -33709,7 +33794,7 @@ var require_fs_minipass = __commonJS({
         if (this[_autoClose] && typeof this[_fd] === "number") {
           const fd = this[_fd];
           this[_fd] = null;
-          fs6.close(fd, (er) => er ? this.emit("error", er) : this.emit("close"));
+          fs8.close(fd, (er) => er ? this.emit("error", er) : this.emit("close"));
         }
       }
     };
@@ -33718,7 +33803,7 @@ var require_fs_minipass = __commonJS({
         let fd;
         if (this[_defaultFlag] && this[_flags] === "r+") {
           try {
-            fd = fs6.openSync(this[_path], this[_flags], this[_mode]);
+            fd = fs8.openSync(this[_path], this[_flags], this[_mode]);
           } catch (er) {
             if (er.code === "ENOENT") {
               this[_flags] = "w";
@@ -33727,14 +33812,14 @@ var require_fs_minipass = __commonJS({
               throw er;
           }
         } else
-          fd = fs6.openSync(this[_path], this[_flags], this[_mode]);
+          fd = fs8.openSync(this[_path], this[_flags], this[_mode]);
         this[_onopen](null, fd);
       }
       [_close]() {
         if (this[_autoClose] && typeof this[_fd] === "number") {
           const fd = this[_fd];
           this[_fd] = null;
-          fs6.closeSync(fd);
+          fs8.closeSync(fd);
           this.emit("close");
         }
       }
@@ -33743,7 +33828,7 @@ var require_fs_minipass = __commonJS({
         try {
           this[_onwrite](
             null,
-            fs6.writeSync(this[_fd], buf, 0, buf.length, this[_pos])
+            fs8.writeSync(this[_fd], buf, 0, buf.length, this[_pos])
           );
           threw = false;
         } finally {
@@ -33762,9 +33847,9 @@ var require_fs_minipass = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/parse.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/parse.js
 var require_parse2 = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/parse.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/parse.js"(exports, module2) {
     "use strict";
     var warner = require_warn_mixin();
     var Header = require_header();
@@ -34163,15 +34248,15 @@ var require_parse2 = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/list.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/list.js
 var require_list = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/list.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/list.js"(exports, module2) {
     "use strict";
     var hlo = require_high_level_opt();
     var Parser = require_parse2();
-    var fs6 = require("fs");
+    var fs8 = require("fs");
     var fsm = require_fs_minipass();
-    var path8 = require("path");
+    var path10 = require("path");
     var stripSlash = require_strip_trailing_slashes();
     module2.exports = (opt_, files, cb) => {
       if (typeof opt_ === "function") {
@@ -34213,8 +34298,8 @@ var require_list = __commonJS({
       const map = new Map(files.map((f) => [stripSlash(f), true]));
       const filter = opt.filter;
       const mapHas = (file, r) => {
-        const root = r || path8.parse(file).root || ".";
-        const ret = file === root ? false : map.has(file) ? map.get(file) : mapHas(path8.dirname(file), root);
+        const root = r || path10.parse(file).root || ".";
+        const ret = file === root ? false : map.has(file) ? map.get(file) : mapHas(path10.dirname(file), root);
         map.set(file, ret);
         return ret;
       };
@@ -34226,16 +34311,16 @@ var require_list = __commonJS({
       let threw = true;
       let fd;
       try {
-        const stat = fs6.statSync(file);
+        const stat = fs8.statSync(file);
         const readSize = opt.maxReadSize || 16 * 1024 * 1024;
         if (stat.size < readSize) {
-          p.end(fs6.readFileSync(file));
+          p.end(fs8.readFileSync(file));
         } else {
           let pos = 0;
           const buf = Buffer.allocUnsafe(readSize);
-          fd = fs6.openSync(file, "r");
+          fd = fs8.openSync(file, "r");
           while (pos < stat.size) {
-            const bytesRead = fs6.readSync(fd, buf, 0, readSize, pos);
+            const bytesRead = fs8.readSync(fd, buf, 0, readSize, pos);
             pos += bytesRead;
             p.write(buf.slice(0, bytesRead));
           }
@@ -34245,7 +34330,7 @@ var require_list = __commonJS({
       } finally {
         if (threw && fd) {
           try {
-            fs6.closeSync(fd);
+            fs8.closeSync(fd);
           } catch (er) {
           }
         }
@@ -34258,7 +34343,7 @@ var require_list = __commonJS({
       const p = new Promise((resolve, reject) => {
         parse.on("error", reject);
         parse.on("end", resolve);
-        fs6.stat(file, (er, stat) => {
+        fs8.stat(file, (er, stat) => {
           if (er) {
             reject(er);
           } else {
@@ -34277,15 +34362,15 @@ var require_list = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/create.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/create.js
 var require_create = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/create.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/create.js"(exports, module2) {
     "use strict";
     var hlo = require_high_level_opt();
     var Pack = require_pack();
     var fsm = require_fs_minipass();
     var t = require_list();
-    var path8 = require("path");
+    var path10 = require("path");
     module2.exports = (opt_, files, cb) => {
       if (typeof files === "function") {
         cb = files;
@@ -34332,7 +34417,7 @@ var require_create = __commonJS({
       files.forEach((file) => {
         if (file.charAt(0) === "@") {
           t({
-            file: path8.resolve(p.cwd, file.slice(1)),
+            file: path10.resolve(p.cwd, file.slice(1)),
             sync: true,
             noResume: true,
             onentry: (entry) => p.add(entry)
@@ -34348,7 +34433,7 @@ var require_create = __commonJS({
         const file = files.shift();
         if (file.charAt(0) === "@") {
           return t({
-            file: path8.resolve(p.cwd, file.slice(1)),
+            file: path10.resolve(p.cwd, file.slice(1)),
             noResume: true,
             onentry: (entry) => p.add(entry)
           }).then((_) => addFilesAsync(p, files));
@@ -34371,16 +34456,16 @@ var require_create = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/replace.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/replace.js
 var require_replace = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/replace.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/replace.js"(exports, module2) {
     "use strict";
     var hlo = require_high_level_opt();
     var Pack = require_pack();
-    var fs6 = require("fs");
+    var fs8 = require("fs");
     var fsm = require_fs_minipass();
     var t = require_list();
-    var path8 = require("path");
+    var path10 = require("path");
     var Header = require_header();
     module2.exports = (opt_, files, cb) => {
       const opt = hlo(opt_);
@@ -34403,20 +34488,20 @@ var require_replace = __commonJS({
       let position;
       try {
         try {
-          fd = fs6.openSync(opt.file, "r+");
+          fd = fs8.openSync(opt.file, "r+");
         } catch (er) {
           if (er.code === "ENOENT") {
-            fd = fs6.openSync(opt.file, "w+");
+            fd = fs8.openSync(opt.file, "w+");
           } else {
             throw er;
           }
         }
-        const st = fs6.fstatSync(fd);
+        const st = fs8.fstatSync(fd);
         const headBuf = Buffer.alloc(512);
         POSITION:
           for (position = 0; position < st.size; position += 512) {
             for (let bufPos = 0, bytes = 0; bufPos < 512; bufPos += bytes) {
-              bytes = fs6.readSync(
+              bytes = fs8.readSync(
                 fd,
                 headBuf,
                 bufPos,
@@ -34448,7 +34533,7 @@ var require_replace = __commonJS({
       } finally {
         if (threw) {
           try {
-            fs6.closeSync(fd);
+            fs8.closeSync(fd);
           } catch (er) {
           }
         }
@@ -34468,7 +34553,7 @@ var require_replace = __commonJS({
       const getPos = (fd, size, cb_) => {
         const cb2 = (er, pos) => {
           if (er) {
-            fs6.close(fd, (_) => cb_(er));
+            fs8.close(fd, (_) => cb_(er));
           } else {
             cb_(null, pos);
           }
@@ -34485,7 +34570,7 @@ var require_replace = __commonJS({
           }
           bufPos += bytes;
           if (bufPos < 512 && bytes) {
-            return fs6.read(
+            return fs8.read(
               fd,
               headBuf,
               bufPos,
@@ -34516,9 +34601,9 @@ var require_replace = __commonJS({
             opt.mtimeCache.set(h.path, h.mtime);
           }
           bufPos = 0;
-          fs6.read(fd, headBuf, 0, 512, position, onread);
+          fs8.read(fd, headBuf, 0, 512, position, onread);
         };
-        fs6.read(fd, headBuf, 0, 512, position, onread);
+        fs8.read(fd, headBuf, 0, 512, position, onread);
       };
       const promise = new Promise((resolve, reject) => {
         p.on("error", reject);
@@ -34526,14 +34611,14 @@ var require_replace = __commonJS({
         const onopen = (er, fd) => {
           if (er && er.code === "ENOENT" && flag === "r+") {
             flag = "w+";
-            return fs6.open(opt.file, flag, onopen);
+            return fs8.open(opt.file, flag, onopen);
           }
           if (er) {
             return reject(er);
           }
-          fs6.fstat(fd, (er2, st) => {
+          fs8.fstat(fd, (er2, st) => {
             if (er2) {
-              return fs6.close(fd, () => reject(er2));
+              return fs8.close(fd, () => reject(er2));
             }
             getPos(fd, st.size, (er3, position) => {
               if (er3) {
@@ -34550,7 +34635,7 @@ var require_replace = __commonJS({
             });
           });
         };
-        fs6.open(opt.file, flag, onopen);
+        fs8.open(opt.file, flag, onopen);
       });
       return cb ? promise.then(cb, cb) : promise;
     };
@@ -34558,7 +34643,7 @@ var require_replace = __commonJS({
       files.forEach((file) => {
         if (file.charAt(0) === "@") {
           t({
-            file: path8.resolve(p.cwd, file.slice(1)),
+            file: path10.resolve(p.cwd, file.slice(1)),
             sync: true,
             noResume: true,
             onentry: (entry) => p.add(entry)
@@ -34574,7 +34659,7 @@ var require_replace = __commonJS({
         const file = files.shift();
         if (file.charAt(0) === "@") {
           return t({
-            file: path8.resolve(p.cwd, file.slice(1)),
+            file: path10.resolve(p.cwd, file.slice(1)),
             noResume: true,
             onentry: (entry) => p.add(entry)
           }).then((_) => addFilesAsync(p, files));
@@ -34587,9 +34672,9 @@ var require_replace = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/update.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/update.js
 var require_update = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/update.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/update.js"(exports, module2) {
     "use strict";
     var hlo = require_high_level_opt();
     var r = require_replace();
@@ -34613,89 +34698,89 @@ var require_update = __commonJS({
       if (!opt.mtimeCache) {
         opt.mtimeCache = /* @__PURE__ */ new Map();
       }
-      opt.filter = filter ? (path8, stat) => filter(path8, stat) && !(opt.mtimeCache.get(path8) > stat.mtime) : (path8, stat) => !(opt.mtimeCache.get(path8) > stat.mtime);
+      opt.filter = filter ? (path10, stat) => filter(path10, stat) && !(opt.mtimeCache.get(path10) > stat.mtime) : (path10, stat) => !(opt.mtimeCache.get(path10) > stat.mtime);
     };
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/opts-arg.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/opts-arg.js
 var require_opts_arg = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/opts-arg.js"(exports, module2) {
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/opts-arg.js"(exports, module2) {
     var { promisify } = require("util");
-    var fs6 = require("fs");
+    var fs8 = require("fs");
     var optsArg = (opts) => {
       if (!opts)
-        opts = { mode: 511, fs: fs6 };
+        opts = { mode: 511, fs: fs8 };
       else if (typeof opts === "object")
-        opts = { mode: 511, fs: fs6, ...opts };
+        opts = { mode: 511, fs: fs8, ...opts };
       else if (typeof opts === "number")
-        opts = { mode: opts, fs: fs6 };
+        opts = { mode: opts, fs: fs8 };
       else if (typeof opts === "string")
-        opts = { mode: parseInt(opts, 8), fs: fs6 };
+        opts = { mode: parseInt(opts, 8), fs: fs8 };
       else
         throw new TypeError("invalid options argument");
-      opts.mkdir = opts.mkdir || opts.fs.mkdir || fs6.mkdir;
+      opts.mkdir = opts.mkdir || opts.fs.mkdir || fs8.mkdir;
       opts.mkdirAsync = promisify(opts.mkdir);
-      opts.stat = opts.stat || opts.fs.stat || fs6.stat;
+      opts.stat = opts.stat || opts.fs.stat || fs8.stat;
       opts.statAsync = promisify(opts.stat);
-      opts.statSync = opts.statSync || opts.fs.statSync || fs6.statSync;
-      opts.mkdirSync = opts.mkdirSync || opts.fs.mkdirSync || fs6.mkdirSync;
+      opts.statSync = opts.statSync || opts.fs.statSync || fs8.statSync;
+      opts.mkdirSync = opts.mkdirSync || opts.fs.mkdirSync || fs8.mkdirSync;
       return opts;
     };
     module2.exports = optsArg;
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/path-arg.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/path-arg.js
 var require_path_arg = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/path-arg.js"(exports, module2) {
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/path-arg.js"(exports, module2) {
     var platform = process.env.__TESTING_MKDIRP_PLATFORM__ || process.platform;
     var { resolve, parse } = require("path");
-    var pathArg = (path8) => {
-      if (/\0/.test(path8)) {
+    var pathArg = (path10) => {
+      if (/\0/.test(path10)) {
         throw Object.assign(
           new TypeError("path must be a string without null bytes"),
           {
-            path: path8,
+            path: path10,
             code: "ERR_INVALID_ARG_VALUE"
           }
         );
       }
-      path8 = resolve(path8);
+      path10 = resolve(path10);
       if (platform === "win32") {
         const badWinChars = /[*|"<>?:]/;
-        const { root } = parse(path8);
-        if (badWinChars.test(path8.substr(root.length))) {
+        const { root } = parse(path10);
+        if (badWinChars.test(path10.substr(root.length))) {
           throw Object.assign(new Error("Illegal characters in path."), {
-            path: path8,
+            path: path10,
             code: "EINVAL"
           });
         }
       }
-      return path8;
+      return path10;
     };
     module2.exports = pathArg;
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/find-made.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/find-made.js
 var require_find_made = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/find-made.js"(exports, module2) {
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/find-made.js"(exports, module2) {
     var { dirname } = require("path");
-    var findMade = (opts, parent, path8 = void 0) => {
-      if (path8 === parent)
+    var findMade = (opts, parent, path10 = void 0) => {
+      if (path10 === parent)
         return Promise.resolve();
       return opts.statAsync(parent).then(
-        (st) => st.isDirectory() ? path8 : void 0,
+        (st) => st.isDirectory() ? path10 : void 0,
         // will fail later
         (er) => er.code === "ENOENT" ? findMade(opts, dirname(parent), parent) : void 0
       );
     };
-    var findMadeSync = (opts, parent, path8 = void 0) => {
-      if (path8 === parent)
+    var findMadeSync = (opts, parent, path10 = void 0) => {
+      if (path10 === parent)
         return void 0;
       try {
-        return opts.statSync(parent).isDirectory() ? path8 : void 0;
+        return opts.statSync(parent).isDirectory() ? path10 : void 0;
       } catch (er) {
         return er.code === "ENOENT" ? findMadeSync(opts, dirname(parent), parent) : void 0;
       }
@@ -34704,25 +34789,25 @@ var require_find_made = __commonJS({
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/mkdirp-manual.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/mkdirp-manual.js
 var require_mkdirp_manual = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/mkdirp-manual.js"(exports, module2) {
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/mkdirp-manual.js"(exports, module2) {
     var { dirname } = require("path");
-    var mkdirpManual = (path8, opts, made) => {
+    var mkdirpManual = (path10, opts, made) => {
       opts.recursive = false;
-      const parent = dirname(path8);
-      if (parent === path8) {
-        return opts.mkdirAsync(path8, opts).catch((er) => {
+      const parent = dirname(path10);
+      if (parent === path10) {
+        return opts.mkdirAsync(path10, opts).catch((er) => {
           if (er.code !== "EISDIR")
             throw er;
         });
       }
-      return opts.mkdirAsync(path8, opts).then(() => made || path8, (er) => {
+      return opts.mkdirAsync(path10, opts).then(() => made || path10, (er) => {
         if (er.code === "ENOENT")
-          return mkdirpManual(parent, opts).then((made2) => mkdirpManual(path8, opts, made2));
+          return mkdirpManual(parent, opts).then((made2) => mkdirpManual(path10, opts, made2));
         if (er.code !== "EEXIST" && er.code !== "EROFS")
           throw er;
-        return opts.statAsync(path8).then((st) => {
+        return opts.statAsync(path10).then((st) => {
           if (st.isDirectory())
             return made;
           else
@@ -34732,12 +34817,12 @@ var require_mkdirp_manual = __commonJS({
         });
       });
     };
-    var mkdirpManualSync = (path8, opts, made) => {
-      const parent = dirname(path8);
+    var mkdirpManualSync = (path10, opts, made) => {
+      const parent = dirname(path10);
       opts.recursive = false;
-      if (parent === path8) {
+      if (parent === path10) {
         try {
-          return opts.mkdirSync(path8, opts);
+          return opts.mkdirSync(path10, opts);
         } catch (er) {
           if (er.code !== "EISDIR")
             throw er;
@@ -34746,15 +34831,15 @@ var require_mkdirp_manual = __commonJS({
         }
       }
       try {
-        opts.mkdirSync(path8, opts);
-        return made || path8;
+        opts.mkdirSync(path10, opts);
+        return made || path10;
       } catch (er) {
         if (er.code === "ENOENT")
-          return mkdirpManualSync(path8, opts, mkdirpManualSync(parent, opts, made));
+          return mkdirpManualSync(path10, opts, mkdirpManualSync(parent, opts, made));
         if (er.code !== "EEXIST" && er.code !== "EROFS")
           throw er;
         try {
-          if (!opts.statSync(path8).isDirectory())
+          if (!opts.statSync(path10).isDirectory())
             throw er;
         } catch (_) {
           throw er;
@@ -34765,36 +34850,36 @@ var require_mkdirp_manual = __commonJS({
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/mkdirp-native.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/mkdirp-native.js
 var require_mkdirp_native = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/mkdirp-native.js"(exports, module2) {
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/mkdirp-native.js"(exports, module2) {
     var { dirname } = require("path");
     var { findMade, findMadeSync } = require_find_made();
     var { mkdirpManual, mkdirpManualSync } = require_mkdirp_manual();
-    var mkdirpNative = (path8, opts) => {
+    var mkdirpNative = (path10, opts) => {
       opts.recursive = true;
-      const parent = dirname(path8);
-      if (parent === path8)
-        return opts.mkdirAsync(path8, opts);
-      return findMade(opts, path8).then((made) => opts.mkdirAsync(path8, opts).then(() => made).catch((er) => {
+      const parent = dirname(path10);
+      if (parent === path10)
+        return opts.mkdirAsync(path10, opts);
+      return findMade(opts, path10).then((made) => opts.mkdirAsync(path10, opts).then(() => made).catch((er) => {
         if (er.code === "ENOENT")
-          return mkdirpManual(path8, opts);
+          return mkdirpManual(path10, opts);
         else
           throw er;
       }));
     };
-    var mkdirpNativeSync = (path8, opts) => {
+    var mkdirpNativeSync = (path10, opts) => {
       opts.recursive = true;
-      const parent = dirname(path8);
-      if (parent === path8)
-        return opts.mkdirSync(path8, opts);
-      const made = findMadeSync(opts, path8);
+      const parent = dirname(path10);
+      if (parent === path10)
+        return opts.mkdirSync(path10, opts);
+      const made = findMadeSync(opts, path10);
       try {
-        opts.mkdirSync(path8, opts);
+        opts.mkdirSync(path10, opts);
         return made;
       } catch (er) {
         if (er.code === "ENOENT")
-          return mkdirpManualSync(path8, opts);
+          return mkdirpManualSync(path10, opts);
         else
           throw er;
       }
@@ -34803,113 +34888,113 @@ var require_mkdirp_native = __commonJS({
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/use-native.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/use-native.js
 var require_use_native = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/lib/use-native.js"(exports, module2) {
-    var fs6 = require("fs");
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/lib/use-native.js"(exports, module2) {
+    var fs8 = require("fs");
     var version2 = process.env.__TESTING_MKDIRP_NODE_VERSION__ || process.version;
     var versArr = version2.replace(/^v/, "").split(".");
     var hasNative = +versArr[0] > 10 || +versArr[0] === 10 && +versArr[1] >= 12;
-    var useNative = !hasNative ? () => false : (opts) => opts.mkdir === fs6.mkdir;
-    var useNativeSync = !hasNative ? () => false : (opts) => opts.mkdirSync === fs6.mkdirSync;
+    var useNative = !hasNative ? () => false : (opts) => opts.mkdir === fs8.mkdir;
+    var useNativeSync = !hasNative ? () => false : (opts) => opts.mkdirSync === fs8.mkdirSync;
     module2.exports = { useNative, useNativeSync };
   }
 });
 
-// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/index.js
+// .yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/index.js
 var require_mkdirp = __commonJS({
-  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-1233611198.zip/node_modules/mkdirp/index.js"(exports, module2) {
+  ".yarn/cache/mkdirp-npm-1.0.4-37f6ef56b9-46ea0f3ffa.zip/node_modules/mkdirp/index.js"(exports, module2) {
     var optsArg = require_opts_arg();
     var pathArg = require_path_arg();
     var { mkdirpNative, mkdirpNativeSync } = require_mkdirp_native();
     var { mkdirpManual, mkdirpManualSync } = require_mkdirp_manual();
     var { useNative, useNativeSync } = require_use_native();
-    var mkdirp = (path8, opts) => {
-      path8 = pathArg(path8);
+    var mkdirp = (path10, opts) => {
+      path10 = pathArg(path10);
       opts = optsArg(opts);
-      return useNative(opts) ? mkdirpNative(path8, opts) : mkdirpManual(path8, opts);
+      return useNative(opts) ? mkdirpNative(path10, opts) : mkdirpManual(path10, opts);
     };
-    var mkdirpSync = (path8, opts) => {
-      path8 = pathArg(path8);
+    var mkdirpSync = (path10, opts) => {
+      path10 = pathArg(path10);
       opts = optsArg(opts);
-      return useNativeSync(opts) ? mkdirpNativeSync(path8, opts) : mkdirpManualSync(path8, opts);
+      return useNativeSync(opts) ? mkdirpNativeSync(path10, opts) : mkdirpManualSync(path10, opts);
     };
     mkdirp.sync = mkdirpSync;
-    mkdirp.native = (path8, opts) => mkdirpNative(pathArg(path8), optsArg(opts));
-    mkdirp.manual = (path8, opts) => mkdirpManual(pathArg(path8), optsArg(opts));
-    mkdirp.nativeSync = (path8, opts) => mkdirpNativeSync(pathArg(path8), optsArg(opts));
-    mkdirp.manualSync = (path8, opts) => mkdirpManualSync(pathArg(path8), optsArg(opts));
+    mkdirp.native = (path10, opts) => mkdirpNative(pathArg(path10), optsArg(opts));
+    mkdirp.manual = (path10, opts) => mkdirpManual(pathArg(path10), optsArg(opts));
+    mkdirp.nativeSync = (path10, opts) => mkdirpNativeSync(pathArg(path10), optsArg(opts));
+    mkdirp.manualSync = (path10, opts) => mkdirpManualSync(pathArg(path10), optsArg(opts));
     module2.exports = mkdirp;
   }
 });
 
-// .yarn/cache/chownr-npm-2.0.0-638f1c9c61-7b240ff920.zip/node_modules/chownr/chownr.js
+// .yarn/cache/chownr-npm-2.0.0-638f1c9c61-594754e130.zip/node_modules/chownr/chownr.js
 var require_chownr = __commonJS({
-  ".yarn/cache/chownr-npm-2.0.0-638f1c9c61-7b240ff920.zip/node_modules/chownr/chownr.js"(exports, module2) {
+  ".yarn/cache/chownr-npm-2.0.0-638f1c9c61-594754e130.zip/node_modules/chownr/chownr.js"(exports, module2) {
     "use strict";
-    var fs6 = require("fs");
-    var path8 = require("path");
-    var LCHOWN = fs6.lchown ? "lchown" : "chown";
-    var LCHOWNSYNC = fs6.lchownSync ? "lchownSync" : "chownSync";
-    var needEISDIRHandled = fs6.lchown && !process.version.match(/v1[1-9]+\./) && !process.version.match(/v10\.[6-9]/);
-    var lchownSync = (path9, uid, gid) => {
+    var fs8 = require("fs");
+    var path10 = require("path");
+    var LCHOWN = fs8.lchown ? "lchown" : "chown";
+    var LCHOWNSYNC = fs8.lchownSync ? "lchownSync" : "chownSync";
+    var needEISDIRHandled = fs8.lchown && !process.version.match(/v1[1-9]+\./) && !process.version.match(/v10\.[6-9]/);
+    var lchownSync = (path11, uid, gid) => {
       try {
-        return fs6[LCHOWNSYNC](path9, uid, gid);
+        return fs8[LCHOWNSYNC](path11, uid, gid);
       } catch (er) {
         if (er.code !== "ENOENT")
           throw er;
       }
     };
-    var chownSync = (path9, uid, gid) => {
+    var chownSync = (path11, uid, gid) => {
       try {
-        return fs6.chownSync(path9, uid, gid);
+        return fs8.chownSync(path11, uid, gid);
       } catch (er) {
         if (er.code !== "ENOENT")
           throw er;
       }
     };
-    var handleEISDIR = needEISDIRHandled ? (path9, uid, gid, cb) => (er) => {
+    var handleEISDIR = needEISDIRHandled ? (path11, uid, gid, cb) => (er) => {
       if (!er || er.code !== "EISDIR")
         cb(er);
       else
-        fs6.chown(path9, uid, gid, cb);
+        fs8.chown(path11, uid, gid, cb);
     } : (_, __, ___, cb) => cb;
-    var handleEISDirSync = needEISDIRHandled ? (path9, uid, gid) => {
+    var handleEISDirSync = needEISDIRHandled ? (path11, uid, gid) => {
       try {
-        return lchownSync(path9, uid, gid);
+        return lchownSync(path11, uid, gid);
       } catch (er) {
         if (er.code !== "EISDIR")
           throw er;
-        chownSync(path9, uid, gid);
+        chownSync(path11, uid, gid);
       }
-    } : (path9, uid, gid) => lchownSync(path9, uid, gid);
+    } : (path11, uid, gid) => lchownSync(path11, uid, gid);
     var nodeVersion = process.version;
-    var readdir = (path9, options, cb) => fs6.readdir(path9, options, cb);
-    var readdirSync = (path9, options) => fs6.readdirSync(path9, options);
+    var readdir = (path11, options, cb) => fs8.readdir(path11, options, cb);
+    var readdirSync = (path11, options) => fs8.readdirSync(path11, options);
     if (/^v4\./.test(nodeVersion))
-      readdir = (path9, options, cb) => fs6.readdir(path9, cb);
+      readdir = (path11, options, cb) => fs8.readdir(path11, cb);
     var chown = (cpath, uid, gid, cb) => {
-      fs6[LCHOWN](cpath, uid, gid, handleEISDIR(cpath, uid, gid, (er) => {
+      fs8[LCHOWN](cpath, uid, gid, handleEISDIR(cpath, uid, gid, (er) => {
         cb(er && er.code !== "ENOENT" ? er : null);
       }));
     };
     var chownrKid = (p, child, uid, gid, cb) => {
       if (typeof child === "string")
-        return fs6.lstat(path8.resolve(p, child), (er, stats) => {
+        return fs8.lstat(path10.resolve(p, child), (er, stats) => {
           if (er)
             return cb(er.code !== "ENOENT" ? er : null);
           stats.name = child;
           chownrKid(p, stats, uid, gid, cb);
         });
       if (child.isDirectory()) {
-        chownr(path8.resolve(p, child.name), uid, gid, (er) => {
+        chownr(path10.resolve(p, child.name), uid, gid, (er) => {
           if (er)
             return cb(er);
-          const cpath = path8.resolve(p, child.name);
+          const cpath = path10.resolve(p, child.name);
           chown(cpath, uid, gid, cb);
         });
       } else {
-        const cpath = path8.resolve(p, child.name);
+        const cpath = path10.resolve(p, child.name);
         chown(cpath, uid, gid, cb);
       }
     };
@@ -34939,7 +35024,7 @@ var require_chownr = __commonJS({
     var chownrKidSync = (p, child, uid, gid) => {
       if (typeof child === "string") {
         try {
-          const stats = fs6.lstatSync(path8.resolve(p, child));
+          const stats = fs8.lstatSync(path10.resolve(p, child));
           stats.name = child;
           child = stats;
         } catch (er) {
@@ -34950,8 +35035,8 @@ var require_chownr = __commonJS({
         }
       }
       if (child.isDirectory())
-        chownrSync(path8.resolve(p, child.name), uid, gid);
-      handleEISDirSync(path8.resolve(p, child.name), uid, gid);
+        chownrSync(path10.resolve(p, child.name), uid, gid);
+      handleEISDirSync(path10.resolve(p, child.name), uid, gid);
     };
     var chownrSync = (p, uid, gid) => {
       let children;
@@ -34974,19 +35059,19 @@ var require_chownr = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/mkdir.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/mkdir.js
 var require_mkdir = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/mkdir.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/mkdir.js"(exports, module2) {
     "use strict";
     var mkdirp = require_mkdirp();
-    var fs6 = require("fs");
-    var path8 = require("path");
+    var fs8 = require("fs");
+    var path10 = require("path");
     var chownr = require_chownr();
     var normPath = require_normalize_windows_path();
     var SymlinkError = class extends Error {
-      constructor(symlink, path9) {
+      constructor(symlink, path11) {
         super("Cannot extract through symbolic link");
-        this.path = path9;
+        this.path = path11;
         this.symlink = symlink;
       }
       get name() {
@@ -34994,9 +35079,9 @@ var require_mkdir = __commonJS({
       }
     };
     var CwdError = class extends Error {
-      constructor(path9, code) {
-        super(code + ": Cannot cd into '" + path9 + "'");
-        this.path = path9;
+      constructor(path11, code) {
+        super(code + ": Cannot cd into '" + path11 + "'");
+        this.path = path11;
         this.code = code;
       }
       get name() {
@@ -35006,7 +35091,7 @@ var require_mkdir = __commonJS({
     var cGet = (cache, key) => cache.get(normPath(key));
     var cSet = (cache, key, val) => cache.set(normPath(key), val);
     var checkCwd = (dir, cb) => {
-      fs6.stat(dir, (er, st) => {
+      fs8.stat(dir, (er, st) => {
         if (er || !st.isDirectory()) {
           er = new CwdError(dir, er && er.code || "ENOTDIR");
         }
@@ -35033,7 +35118,7 @@ var require_mkdir = __commonJS({
           if (created && doChown) {
             chownr(created, uid, gid, (er2) => done(er2));
           } else if (needChmod) {
-            fs6.chmod(dir, mode, cb);
+            fs8.chmod(dir, mode, cb);
           } else {
             cb();
           }
@@ -35048,7 +35133,7 @@ var require_mkdir = __commonJS({
       if (preserve) {
         return mkdirp(dir, { mode }).then((made) => done(null, made), done);
       }
-      const sub = normPath(path8.relative(cwd, dir));
+      const sub = normPath(path10.relative(cwd, dir));
       const parts = sub.split("/");
       mkdir_(cwd, parts, mode, cache, unlink, cwd, null, done);
     };
@@ -35057,26 +35142,26 @@ var require_mkdir = __commonJS({
         return cb(null, created);
       }
       const p = parts.shift();
-      const part = normPath(path8.resolve(base + "/" + p));
+      const part = normPath(path10.resolve(base + "/" + p));
       if (cGet(cache, part)) {
         return mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
       }
-      fs6.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
+      fs8.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
     };
     var onmkdir = (part, parts, mode, cache, unlink, cwd, created, cb) => (er) => {
       if (er) {
-        fs6.lstat(part, (statEr, st) => {
+        fs8.lstat(part, (statEr, st) => {
           if (statEr) {
             statEr.path = statEr.path && normPath(statEr.path);
             cb(statEr);
           } else if (st.isDirectory()) {
             mkdir_(part, parts, mode, cache, unlink, cwd, created, cb);
           } else if (unlink) {
-            fs6.unlink(part, (er2) => {
+            fs8.unlink(part, (er2) => {
               if (er2) {
                 return cb(er2);
               }
-              fs6.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
+              fs8.mkdir(part, mode, onmkdir(part, parts, mode, cache, unlink, cwd, created, cb));
             });
           } else if (st.isSymbolicLink()) {
             return cb(new SymlinkError(part, part + "/" + parts.join("/")));
@@ -35093,7 +35178,7 @@ var require_mkdir = __commonJS({
       let ok = false;
       let code = "ENOTDIR";
       try {
-        ok = fs6.statSync(dir).isDirectory();
+        ok = fs8.statSync(dir).isDirectory();
       } catch (er) {
         code = er.code;
       } finally {
@@ -35120,7 +35205,7 @@ var require_mkdir = __commonJS({
           chownr.sync(created2, uid, gid);
         }
         if (needChmod) {
-          fs6.chmodSync(dir, mode);
+          fs8.chmodSync(dir, mode);
         }
       };
       if (cache && cGet(cache, dir) === true) {
@@ -35133,26 +35218,26 @@ var require_mkdir = __commonJS({
       if (preserve) {
         return done(mkdirp.sync(dir, mode));
       }
-      const sub = normPath(path8.relative(cwd, dir));
+      const sub = normPath(path10.relative(cwd, dir));
       const parts = sub.split("/");
       let created = null;
       for (let p = parts.shift(), part = cwd; p && (part += "/" + p); p = parts.shift()) {
-        part = normPath(path8.resolve(part));
+        part = normPath(path10.resolve(part));
         if (cGet(cache, part)) {
           continue;
         }
         try {
-          fs6.mkdirSync(part, mode);
+          fs8.mkdirSync(part, mode);
           created = created || part;
           cSet(cache, part, true);
         } catch (er) {
-          const st = fs6.lstatSync(part);
+          const st = fs8.lstatSync(part);
           if (st.isDirectory()) {
             cSet(cache, part, true);
             continue;
           } else if (unlink) {
-            fs6.unlinkSync(part);
-            fs6.mkdirSync(part, mode);
+            fs8.unlinkSync(part);
+            fs8.mkdirSync(part, mode);
             created = created || part;
             cSet(cache, part, true);
             continue;
@@ -35166,9 +35251,9 @@ var require_mkdir = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/normalize-unicode.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/normalize-unicode.js
 var require_normalize_unicode = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/normalize-unicode.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/normalize-unicode.js"(exports, module2) {
     var normalizeCache = /* @__PURE__ */ Object.create(null);
     var { hasOwnProperty } = Object.prototype;
     module2.exports = (s) => {
@@ -35180,9 +35265,9 @@ var require_normalize_unicode = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/path-reservations.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/path-reservations.js
 var require_path_reservations = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/path-reservations.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/path-reservations.js"(exports, module2) {
     var assert2 = require("assert");
     var normalize = require_normalize_unicode();
     var stripSlashes = require_strip_trailing_slashes();
@@ -35192,12 +35277,12 @@ var require_path_reservations = __commonJS({
     module2.exports = () => {
       const queues = /* @__PURE__ */ new Map();
       const reservations = /* @__PURE__ */ new Map();
-      const getDirs = (path8) => {
-        const dirs = path8.split("/").slice(0, -1).reduce((set, path9) => {
+      const getDirs = (path10) => {
+        const dirs = path10.split("/").slice(0, -1).reduce((set, path11) => {
           if (set.length) {
-            path9 = join2(set[set.length - 1], path9);
+            path11 = join2(set[set.length - 1], path11);
           }
-          set.push(path9 || "/");
+          set.push(path11 || "/");
           return set;
         }, []);
         return dirs;
@@ -35209,8 +35294,8 @@ var require_path_reservations = __commonJS({
           throw new Error("function does not have any path reservations");
         }
         return {
-          paths: res.paths.map((path8) => queues.get(path8)),
-          dirs: [...res.dirs].map((path8) => queues.get(path8))
+          paths: res.paths.map((path10) => queues.get(path10)),
+          dirs: [...res.dirs].map((path10) => queues.get(path10))
         };
       };
       const check = (fn2) => {
@@ -35231,11 +35316,11 @@ var require_path_reservations = __commonJS({
         }
         const { paths, dirs } = reservations.get(fn2);
         const next = /* @__PURE__ */ new Set();
-        paths.forEach((path8) => {
-          const q = queues.get(path8);
+        paths.forEach((path10) => {
+          const q = queues.get(path10);
           assert2.equal(q[0], fn2);
           if (q.length === 1) {
-            queues.delete(path8);
+            queues.delete(path10);
           } else {
             q.shift();
             if (typeof q[0] === "function") {
@@ -35266,13 +35351,13 @@ var require_path_reservations = __commonJS({
           return stripSlashes(join2(normalize(p))).toLowerCase();
         });
         const dirs = new Set(
-          paths.map((path8) => getDirs(path8)).reduce((a, b) => a.concat(b))
+          paths.map((path10) => getDirs(path10)).reduce((a, b) => a.concat(b))
         );
         reservations.set(fn2, { dirs, paths });
-        paths.forEach((path8) => {
-          const q = queues.get(path8);
+        paths.forEach((path10) => {
+          const q = queues.get(path10);
           if (!q) {
-            queues.set(path8, [fn2]);
+            queues.set(path10, [fn2]);
           } else {
             q.push(fn2);
           }
@@ -35294,13 +35379,13 @@ var require_path_reservations = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/get-write-flag.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/get-write-flag.js
 var require_get_write_flag = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/get-write-flag.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/get-write-flag.js"(exports, module2) {
     var platform = process.env.__FAKE_PLATFORM__ || process.platform;
     var isWindows = platform === "win32";
-    var fs6 = global.__FAKE_TESTING_FS__ || require("fs");
-    var { O_CREAT, O_TRUNC, O_WRONLY, UV_FS_O_FILEMAP = 0 } = fs6.constants;
+    var fs8 = global.__FAKE_TESTING_FS__ || require("fs");
+    var { O_CREAT, O_TRUNC, O_WRONLY, UV_FS_O_FILEMAP = 0 } = fs8.constants;
     var fMapEnabled = isWindows && !!UV_FS_O_FILEMAP;
     var fMapLimit = 512 * 1024;
     var fMapFlag = UV_FS_O_FILEMAP | O_TRUNC | O_CREAT | O_WRONLY;
@@ -35308,16 +35393,16 @@ var require_get_write_flag = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/unpack.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/unpack.js
 var require_unpack = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/unpack.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/unpack.js"(exports, module2) {
     "use strict";
     var assert2 = require("assert");
     var Parser = require_parse2();
-    var fs6 = require("fs");
+    var fs8 = require("fs");
     var fsm = require_fs_minipass();
-    var path8 = require("path");
-    var mkdir3 = require_mkdir();
+    var path10 = require("path");
+    var mkdir4 = require_mkdir();
     var wc = require_winchars();
     var pathReservations = require_path_reservations();
     var stripAbsolutePath = require_strip_absolute_path();
@@ -35353,34 +35438,34 @@ var require_unpack = __commonJS({
     var getFlag = require_get_write_flag();
     var platform = process.env.TESTING_TAR_FAKE_PLATFORM || process.platform;
     var isWindows = platform === "win32";
-    var unlinkFile = (path9, cb) => {
+    var unlinkFile = (path11, cb) => {
       if (!isWindows) {
-        return fs6.unlink(path9, cb);
+        return fs8.unlink(path11, cb);
       }
-      const name = path9 + ".DELETE." + crypto.randomBytes(16).toString("hex");
-      fs6.rename(path9, name, (er) => {
+      const name = path11 + ".DELETE." + crypto.randomBytes(16).toString("hex");
+      fs8.rename(path11, name, (er) => {
         if (er) {
           return cb(er);
         }
-        fs6.unlink(name, cb);
+        fs8.unlink(name, cb);
       });
     };
-    var unlinkFileSync = (path9) => {
+    var unlinkFileSync = (path11) => {
       if (!isWindows) {
-        return fs6.unlinkSync(path9);
+        return fs8.unlinkSync(path11);
       }
-      const name = path9 + ".DELETE." + crypto.randomBytes(16).toString("hex");
-      fs6.renameSync(path9, name);
-      fs6.unlinkSync(name);
+      const name = path11 + ".DELETE." + crypto.randomBytes(16).toString("hex");
+      fs8.renameSync(path11, name);
+      fs8.unlinkSync(name);
     };
     var uint32 = (a, b, c) => a === a >>> 0 ? a : b === b >>> 0 ? b : c;
-    var cacheKeyNormalize = (path9) => stripSlash(normPath(normalize(path9))).toLowerCase();
+    var cacheKeyNormalize = (path11) => stripSlash(normPath(normalize(path11))).toLowerCase();
     var pruneCache = (cache, abs) => {
       abs = cacheKeyNormalize(abs);
-      for (const path9 of cache.keys()) {
-        const pnorm = cacheKeyNormalize(path9);
+      for (const path11 of cache.keys()) {
+        const pnorm = cacheKeyNormalize(path11);
         if (pnorm === abs || pnorm.indexOf(abs + "/") === 0) {
-          cache.delete(path9);
+          cache.delete(path11);
         }
       }
     };
@@ -35438,7 +35523,7 @@ var require_unpack = __commonJS({
         this.noMtime = !!opt.noMtime;
         this.preservePaths = !!opt.preservePaths;
         this.unlink = !!opt.unlink;
-        this.cwd = normPath(path8.resolve(opt.cwd || process.cwd()));
+        this.cwd = normPath(path10.resolve(opt.cwd || process.cwd()));
         this.strip = +opt.strip || 0;
         this.processUmask = opt.noChmod ? 0 : process.umask();
         this.umask = typeof opt.umask === "number" ? opt.umask : this.processUmask;
@@ -35497,10 +35582,10 @@ var require_unpack = __commonJS({
             });
           }
         }
-        if (path8.isAbsolute(entry.path)) {
-          entry.absolute = normPath(path8.resolve(entry.path));
+        if (path10.isAbsolute(entry.path)) {
+          entry.absolute = normPath(path10.resolve(entry.path));
         } else {
-          entry.absolute = normPath(path8.resolve(this.cwd, entry.path));
+          entry.absolute = normPath(path10.resolve(this.cwd, entry.path));
         }
         if (!this.preservePaths && entry.absolute.indexOf(this.cwd + "/") !== 0 && entry.absolute !== this.cwd) {
           this.warn("TAR_ENTRY_ERROR", "path escaped extraction target", {
@@ -35515,9 +35600,9 @@ var require_unpack = __commonJS({
           return false;
         }
         if (this.win32) {
-          const { root: aRoot } = path8.win32.parse(entry.absolute);
+          const { root: aRoot } = path10.win32.parse(entry.absolute);
           entry.absolute = aRoot + wc.encode(entry.absolute.slice(aRoot.length));
-          const { root: pRoot } = path8.win32.parse(entry.path);
+          const { root: pRoot } = path10.win32.parse(entry.path);
           entry.path = pRoot + wc.encode(entry.path.slice(pRoot.length));
         }
         return true;
@@ -35556,7 +35641,7 @@ var require_unpack = __commonJS({
         }
       }
       [MKDIR](dir, mode, cb) {
-        mkdir3(normPath(dir), {
+        mkdir4(normPath(dir), {
           uid: this.uid,
           gid: this.gid,
           processUid: this.processUid,
@@ -35588,7 +35673,7 @@ var require_unpack = __commonJS({
         });
         stream.on("error", (er) => {
           if (stream.fd) {
-            fs6.close(stream.fd, () => {
+            fs8.close(stream.fd, () => {
             });
           }
           stream.write = () => true;
@@ -35599,7 +35684,7 @@ var require_unpack = __commonJS({
         const done = (er) => {
           if (er) {
             if (stream.fd) {
-              fs6.close(stream.fd, () => {
+              fs8.close(stream.fd, () => {
               });
             }
             this[ONERROR](er, entry);
@@ -35607,7 +35692,7 @@ var require_unpack = __commonJS({
             return;
           }
           if (--actions === 0) {
-            fs6.close(stream.fd, (er2) => {
+            fs8.close(stream.fd, (er2) => {
               if (er2) {
                 this[ONERROR](er2, entry);
               } else {
@@ -35624,13 +35709,13 @@ var require_unpack = __commonJS({
             actions++;
             const atime = entry.atime || /* @__PURE__ */ new Date();
             const mtime = entry.mtime;
-            fs6.futimes(fd, atime, mtime, (er) => er ? fs6.utimes(abs, atime, mtime, (er2) => done(er2 && er)) : done());
+            fs8.futimes(fd, atime, mtime, (er) => er ? fs8.utimes(abs, atime, mtime, (er2) => done(er2 && er)) : done());
           }
           if (this[DOCHOWN](entry)) {
             actions++;
             const uid = this[UID](entry);
             const gid = this[GID](entry);
-            fs6.fchown(fd, uid, gid, (er) => er ? fs6.chown(abs, uid, gid, (er2) => done(er2 && er)) : done());
+            fs8.fchown(fd, uid, gid, (er) => er ? fs8.chown(abs, uid, gid, (er2) => done(er2 && er)) : done());
           }
           done();
         });
@@ -35662,11 +35747,11 @@ var require_unpack = __commonJS({
           };
           if (entry.mtime && !this.noMtime) {
             actions++;
-            fs6.utimes(entry.absolute, entry.atime || /* @__PURE__ */ new Date(), entry.mtime, done);
+            fs8.utimes(entry.absolute, entry.atime || /* @__PURE__ */ new Date(), entry.mtime, done);
           }
           if (this[DOCHOWN](entry)) {
             actions++;
-            fs6.chown(entry.absolute, this[UID](entry), this[GID](entry), done);
+            fs8.chown(entry.absolute, this[UID](entry), this[GID](entry), done);
           }
           done();
         });
@@ -35684,7 +35769,7 @@ var require_unpack = __commonJS({
         this[LINK](entry, entry.linkpath, "symlink", done);
       }
       [HARDLINK](entry, done) {
-        const linkpath = normPath(path8.resolve(this.cwd, entry.linkpath));
+        const linkpath = normPath(path10.resolve(this.cwd, entry.linkpath));
         this[LINK](entry, linkpath, "link", done);
       }
       [PEND]() {
@@ -35739,7 +35824,7 @@ var require_unpack = __commonJS({
         };
         const start = () => {
           if (entry.absolute !== this.cwd) {
-            const parent = normPath(path8.dirname(entry.absolute));
+            const parent = normPath(path10.dirname(entry.absolute));
             if (parent !== this.cwd) {
               return this[MKDIR](parent, this.dmode, (er) => {
                 if (er) {
@@ -35754,7 +35839,7 @@ var require_unpack = __commonJS({
           afterMakeParent();
         };
         const afterMakeParent = () => {
-          fs6.lstat(entry.absolute, (lstatEr, st) => {
+          fs8.lstat(entry.absolute, (lstatEr, st) => {
             if (st && (this.keep || this.newer && st.mtime > entry.mtime)) {
               this[SKIP](entry);
               done();
@@ -35770,10 +35855,10 @@ var require_unpack = __commonJS({
                 if (!needChmod) {
                   return afterChmod();
                 }
-                return fs6.chmod(entry.absolute, entry.mode, afterChmod);
+                return fs8.chmod(entry.absolute, entry.mode, afterChmod);
               }
               if (entry.absolute !== this.cwd) {
-                return fs6.rmdir(entry.absolute, (er) => this[MAKEFS](er, entry, done));
+                return fs8.rmdir(entry.absolute, (er) => this[MAKEFS](er, entry, done));
               }
             }
             if (entry.absolute === this.cwd) {
@@ -35809,7 +35894,7 @@ var require_unpack = __commonJS({
         }
       }
       [LINK](entry, linkpath, link, done) {
-        fs6[link](linkpath, entry.absolute, (er) => {
+        fs8[link](linkpath, entry.absolute, (er) => {
           if (er) {
             this[ONERROR](er, entry);
           } else {
@@ -35842,7 +35927,7 @@ var require_unpack = __commonJS({
           this[CHECKED_CWD] = true;
         }
         if (entry.absolute !== this.cwd) {
-          const parent = normPath(path8.dirname(entry.absolute));
+          const parent = normPath(path10.dirname(entry.absolute));
           if (parent !== this.cwd) {
             const mkParent = this[MKDIR](parent, this.dmode);
             if (mkParent) {
@@ -35850,7 +35935,7 @@ var require_unpack = __commonJS({
             }
           }
         }
-        const [lstatEr, st] = callSync(() => fs6.lstatSync(entry.absolute));
+        const [lstatEr, st] = callSync(() => fs8.lstatSync(entry.absolute));
         if (st && (this.keep || this.newer && st.mtime > entry.mtime)) {
           return this[SKIP](entry);
         }
@@ -35861,11 +35946,11 @@ var require_unpack = __commonJS({
           if (entry.type === "Directory") {
             const needChmod = !this.noChmod && entry.mode && (st.mode & 4095) !== entry.mode;
             const [er3] = needChmod ? callSync(() => {
-              fs6.chmodSync(entry.absolute, entry.mode);
+              fs8.chmodSync(entry.absolute, entry.mode);
             }) : [];
             return this[MAKEFS](er3, entry);
           }
-          const [er2] = callSync(() => fs6.rmdirSync(entry.absolute));
+          const [er2] = callSync(() => fs8.rmdirSync(entry.absolute));
           this[MAKEFS](er2, entry);
         }
         const [er] = entry.absolute === this.cwd ? [] : callSync(() => unlinkFileSync(entry.absolute));
@@ -35876,7 +35961,7 @@ var require_unpack = __commonJS({
         const oner = (er) => {
           let closeError;
           try {
-            fs6.closeSync(fd);
+            fs8.closeSync(fd);
           } catch (e) {
             closeError = e;
           }
@@ -35887,7 +35972,7 @@ var require_unpack = __commonJS({
         };
         let fd;
         try {
-          fd = fs6.openSync(entry.absolute, getFlag(entry.size), mode);
+          fd = fs8.openSync(entry.absolute, getFlag(entry.size), mode);
         } catch (er) {
           return oner(er);
         }
@@ -35898,7 +35983,7 @@ var require_unpack = __commonJS({
         }
         tx.on("data", (chunk) => {
           try {
-            fs6.writeSync(fd, chunk, 0, chunk.length);
+            fs8.writeSync(fd, chunk, 0, chunk.length);
           } catch (er) {
             oner(er);
           }
@@ -35909,10 +35994,10 @@ var require_unpack = __commonJS({
             const atime = entry.atime || /* @__PURE__ */ new Date();
             const mtime = entry.mtime;
             try {
-              fs6.futimesSync(fd, atime, mtime);
+              fs8.futimesSync(fd, atime, mtime);
             } catch (futimeser) {
               try {
-                fs6.utimesSync(entry.absolute, atime, mtime);
+                fs8.utimesSync(entry.absolute, atime, mtime);
               } catch (utimeser) {
                 er = futimeser;
               }
@@ -35922,10 +36007,10 @@ var require_unpack = __commonJS({
             const uid = this[UID](entry);
             const gid = this[GID](entry);
             try {
-              fs6.fchownSync(fd, uid, gid);
+              fs8.fchownSync(fd, uid, gid);
             } catch (fchowner) {
               try {
-                fs6.chownSync(entry.absolute, uid, gid);
+                fs8.chownSync(entry.absolute, uid, gid);
               } catch (chowner) {
                 er = er || fchowner;
               }
@@ -35944,13 +36029,13 @@ var require_unpack = __commonJS({
         }
         if (entry.mtime && !this.noMtime) {
           try {
-            fs6.utimesSync(entry.absolute, entry.atime || /* @__PURE__ */ new Date(), entry.mtime);
+            fs8.utimesSync(entry.absolute, entry.atime || /* @__PURE__ */ new Date(), entry.mtime);
           } catch (er2) {
           }
         }
         if (this[DOCHOWN](entry)) {
           try {
-            fs6.chownSync(entry.absolute, this[UID](entry), this[GID](entry));
+            fs8.chownSync(entry.absolute, this[UID](entry), this[GID](entry));
           } catch (er2) {
           }
         }
@@ -35959,7 +36044,7 @@ var require_unpack = __commonJS({
       }
       [MKDIR](dir, mode) {
         try {
-          return mkdir3.sync(normPath(dir), {
+          return mkdir4.sync(normPath(dir), {
             uid: this.uid,
             gid: this.gid,
             processUid: this.processUid,
@@ -35977,7 +36062,7 @@ var require_unpack = __commonJS({
       }
       [LINK](entry, linkpath, link, done) {
         try {
-          fs6[link + "Sync"](linkpath, entry.absolute);
+          fs8[link + "Sync"](linkpath, entry.absolute);
           done();
           entry.resume();
         } catch (er) {
@@ -35990,15 +36075,15 @@ var require_unpack = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/extract.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/extract.js
 var require_extract = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/lib/extract.js"(exports, module2) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/lib/extract.js"(exports, module2) {
     "use strict";
     var hlo = require_high_level_opt();
     var Unpack = require_unpack();
-    var fs6 = require("fs");
+    var fs8 = require("fs");
     var fsm = require_fs_minipass();
-    var path8 = require("path");
+    var path10 = require("path");
     var stripSlash = require_strip_trailing_slashes();
     module2.exports = (opt_, files, cb) => {
       if (typeof opt_ === "function") {
@@ -36030,8 +36115,8 @@ var require_extract = __commonJS({
       const map = new Map(files.map((f) => [stripSlash(f), true]));
       const filter = opt.filter;
       const mapHas = (file, r) => {
-        const root = r || path8.parse(file).root || ".";
-        const ret = file === root ? false : map.has(file) ? map.get(file) : mapHas(path8.dirname(file), root);
+        const root = r || path10.parse(file).root || ".";
+        const ret = file === root ? false : map.has(file) ? map.get(file) : mapHas(path10.dirname(file), root);
         map.set(file, ret);
         return ret;
       };
@@ -36040,7 +36125,7 @@ var require_extract = __commonJS({
     var extractFileSync = (opt) => {
       const u = new Unpack.Sync(opt);
       const file = opt.file;
-      const stat = fs6.statSync(file);
+      const stat = fs8.statSync(file);
       const readSize = opt.maxReadSize || 16 * 1024 * 1024;
       const stream = new fsm.ReadStreamSync(file, {
         readSize,
@@ -36055,7 +36140,7 @@ var require_extract = __commonJS({
       const p = new Promise((resolve, reject) => {
         u.on("error", reject);
         u.on("close", resolve);
-        fs6.stat(file, (er, stat) => {
+        fs8.stat(file, (er, stat) => {
           if (er) {
             reject(er);
           } else {
@@ -36075,9 +36160,9 @@ var require_extract = __commonJS({
   }
 });
 
-// .yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/index.js
+// .yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/index.js
 var require_tar = __commonJS({
-  ".yarn/cache/tar-npm-6.1.15-44c3e71720-815c25f881.zip/node_modules/tar/index.js"(exports) {
+  ".yarn/cache/tar-npm-6.1.15-44c3e71720-bb2babe7b1.zip/node_modules/tar/index.js"(exports) {
     "use strict";
     exports.c = exports.create = require_create();
     exports.r = exports.replace = require_replace();
@@ -36095,23 +36180,23 @@ var require_tar = __commonJS({
   }
 });
 
-// .yarn/cache/v8-compile-cache-npm-2.3.0-961375f150-757e7df6b1.zip/node_modules/v8-compile-cache/v8-compile-cache.js
+// .yarn/cache/v8-compile-cache-npm-2.3.0-961375f150-b2d866febf.zip/node_modules/v8-compile-cache/v8-compile-cache.js
 var require_v8_compile_cache = __commonJS({
-  ".yarn/cache/v8-compile-cache-npm-2.3.0-961375f150-757e7df6b1.zip/node_modules/v8-compile-cache/v8-compile-cache.js"(exports, module2) {
+  ".yarn/cache/v8-compile-cache-npm-2.3.0-961375f150-b2d866febf.zip/node_modules/v8-compile-cache/v8-compile-cache.js"(exports, module2) {
     "use strict";
     var Module2 = require("module");
     var crypto = require("crypto");
-    var fs6 = require("fs");
-    var path8 = require("path");
+    var fs8 = require("fs");
+    var path10 = require("path");
     var vm = require("vm");
-    var os2 = require("os");
+    var os3 = require("os");
     var hasOwnProperty = Object.prototype.hasOwnProperty;
     var FileSystemBlobStore = class {
       constructor(directory, prefix) {
         const name = prefix ? slashEscape(prefix + ".") : "";
-        this._blobFilename = path8.join(directory, name + "BLOB");
-        this._mapFilename = path8.join(directory, name + "MAP");
-        this._lockFilename = path8.join(directory, name + "LOCK");
+        this._blobFilename = path10.join(directory, name + "BLOB");
+        this._mapFilename = path10.join(directory, name + "MAP");
+        this._lockFilename = path10.join(directory, name + "LOCK");
         this._directory = directory;
         this._load();
       }
@@ -36163,22 +36248,22 @@ var require_v8_compile_cache = __commonJS({
         const mapToStore = JSON.stringify(dump[1]);
         try {
           mkdirpSync(this._directory);
-          fs6.writeFileSync(this._lockFilename, "LOCK", { flag: "wx" });
+          fs8.writeFileSync(this._lockFilename, "LOCK", { flag: "wx" });
         } catch (error) {
           return false;
         }
         try {
-          fs6.writeFileSync(this._blobFilename, blobToStore);
-          fs6.writeFileSync(this._mapFilename, mapToStore);
+          fs8.writeFileSync(this._blobFilename, blobToStore);
+          fs8.writeFileSync(this._mapFilename, mapToStore);
         } finally {
-          fs6.unlinkSync(this._lockFilename);
+          fs8.unlinkSync(this._lockFilename);
         }
         return true;
       }
       _load() {
         try {
-          this._storedBlob = fs6.readFileSync(this._blobFilename);
-          this._storedMap = JSON.parse(fs6.readFileSync(this._mapFilename));
+          this._storedBlob = fs8.readFileSync(this._blobFilename);
+          this._storedMap = JSON.parse(fs8.readFileSync(this._mapFilename));
         } catch (e) {
           this._storedBlob = Buffer.alloc(0);
           this._storedMap = {};
@@ -36240,7 +36325,7 @@ var require_v8_compile_cache = __commonJS({
           require2.main = process.mainModule;
           require2.extensions = Module2._extensions;
           require2.cache = Module2._cache;
-          const dirname = path8.dirname(filename);
+          const dirname = path10.dirname(filename);
           const compiledWrapper = self2._moduleCompile(filename, content);
           const args = [mod.exports, require2, mod, filename, dirname, process, global, Buffer];
           return compiledWrapper.apply(mod.exports, args);
@@ -36295,18 +36380,18 @@ var require_v8_compile_cache = __commonJS({
       }
     };
     function mkdirpSync(p_) {
-      _mkdirpSync(path8.resolve(p_), 511);
+      _mkdirpSync(path10.resolve(p_), 511);
     }
     function _mkdirpSync(p, mode) {
       try {
-        fs6.mkdirSync(p, mode);
+        fs8.mkdirSync(p, mode);
       } catch (err0) {
         if (err0.code === "ENOENT") {
-          _mkdirpSync(path8.dirname(p));
+          _mkdirpSync(path10.dirname(p));
           _mkdirpSync(p);
         } else {
           try {
-            const stat = fs6.statSync(p);
+            const stat = fs8.statSync(p);
             if (!stat.isDirectory()) {
               throw err0;
             }
@@ -36338,7 +36423,7 @@ var require_v8_compile_cache = __commonJS({
       }
       const dirname = typeof process.getuid === "function" ? "v8-compile-cache-" + process.getuid() : "v8-compile-cache";
       const version2 = typeof process.versions.v8 === "string" ? process.versions.v8 : typeof process.versions.chakracore === "string" ? "chakracore-" + process.versions.chakracore : "node-" + process.version;
-      const cacheDir = path8.join(os2.tmpdir(), dirname, version2);
+      const cacheDir = path10.join(os3.tmpdir(), dirname, version2);
       return cacheDir;
     }
     function getMainName() {
@@ -36371,13 +36456,13 @@ var require_v8_compile_cache = __commonJS({
   }
 });
 
-// .yarn/cache/isexe-npm-2.0.0-b58870bd2e-b37fe0a798.zip/node_modules/isexe/windows.js
+// .yarn/cache/isexe-npm-2.0.0-b58870bd2e-228cfa503f.zip/node_modules/isexe/windows.js
 var require_windows = __commonJS({
-  ".yarn/cache/isexe-npm-2.0.0-b58870bd2e-b37fe0a798.zip/node_modules/isexe/windows.js"(exports, module2) {
+  ".yarn/cache/isexe-npm-2.0.0-b58870bd2e-228cfa503f.zip/node_modules/isexe/windows.js"(exports, module2) {
     module2.exports = isexe;
     isexe.sync = sync;
-    var fs6 = require("fs");
-    function checkPathExt(path8, options) {
+    var fs8 = require("fs");
+    function checkPathExt(path10, options) {
       var pathext = options.pathExt !== void 0 ? options.pathExt : process.env.PATHEXT;
       if (!pathext) {
         return true;
@@ -36388,42 +36473,42 @@ var require_windows = __commonJS({
       }
       for (var i = 0; i < pathext.length; i++) {
         var p = pathext[i].toLowerCase();
-        if (p && path8.substr(-p.length).toLowerCase() === p) {
+        if (p && path10.substr(-p.length).toLowerCase() === p) {
           return true;
         }
       }
       return false;
     }
-    function checkStat(stat, path8, options) {
+    function checkStat(stat, path10, options) {
       if (!stat.isSymbolicLink() && !stat.isFile()) {
         return false;
       }
-      return checkPathExt(path8, options);
+      return checkPathExt(path10, options);
     }
-    function isexe(path8, options, cb) {
-      fs6.stat(path8, function(er, stat) {
-        cb(er, er ? false : checkStat(stat, path8, options));
+    function isexe(path10, options, cb) {
+      fs8.stat(path10, function(er, stat) {
+        cb(er, er ? false : checkStat(stat, path10, options));
       });
     }
-    function sync(path8, options) {
-      return checkStat(fs6.statSync(path8), path8, options);
+    function sync(path10, options) {
+      return checkStat(fs8.statSync(path10), path10, options);
     }
   }
 });
 
-// .yarn/cache/isexe-npm-2.0.0-b58870bd2e-b37fe0a798.zip/node_modules/isexe/mode.js
+// .yarn/cache/isexe-npm-2.0.0-b58870bd2e-228cfa503f.zip/node_modules/isexe/mode.js
 var require_mode = __commonJS({
-  ".yarn/cache/isexe-npm-2.0.0-b58870bd2e-b37fe0a798.zip/node_modules/isexe/mode.js"(exports, module2) {
+  ".yarn/cache/isexe-npm-2.0.0-b58870bd2e-228cfa503f.zip/node_modules/isexe/mode.js"(exports, module2) {
     module2.exports = isexe;
     isexe.sync = sync;
-    var fs6 = require("fs");
-    function isexe(path8, options, cb) {
-      fs6.stat(path8, function(er, stat) {
+    var fs8 = require("fs");
+    function isexe(path10, options, cb) {
+      fs8.stat(path10, function(er, stat) {
         cb(er, er ? false : checkStat(stat, options));
       });
     }
-    function sync(path8, options) {
-      return checkStat(fs6.statSync(path8), options);
+    function sync(path10, options) {
+      return checkStat(fs8.statSync(path10), options);
     }
     function checkStat(stat, options) {
       return stat.isFile() && checkMode(stat, options);
@@ -36444,10 +36529,10 @@ var require_mode = __commonJS({
   }
 });
 
-// .yarn/cache/isexe-npm-2.0.0-b58870bd2e-b37fe0a798.zip/node_modules/isexe/index.js
+// .yarn/cache/isexe-npm-2.0.0-b58870bd2e-228cfa503f.zip/node_modules/isexe/index.js
 var require_isexe = __commonJS({
-  ".yarn/cache/isexe-npm-2.0.0-b58870bd2e-b37fe0a798.zip/node_modules/isexe/index.js"(exports, module2) {
-    var fs6 = require("fs");
+  ".yarn/cache/isexe-npm-2.0.0-b58870bd2e-228cfa503f.zip/node_modules/isexe/index.js"(exports, module2) {
+    var fs8 = require("fs");
     var core;
     if (process.platform === "win32" || global.TESTING_WINDOWS) {
       core = require_windows();
@@ -36456,7 +36541,7 @@ var require_isexe = __commonJS({
     }
     module2.exports = isexe;
     isexe.sync = sync;
-    function isexe(path8, options, cb) {
+    function isexe(path10, options, cb) {
       if (typeof options === "function") {
         cb = options;
         options = {};
@@ -36466,7 +36551,7 @@ var require_isexe = __commonJS({
           throw new TypeError("callback not provided");
         }
         return new Promise(function(resolve, reject) {
-          isexe(path8, options || {}, function(er, is) {
+          isexe(path10, options || {}, function(er, is) {
             if (er) {
               reject(er);
             } else {
@@ -36475,7 +36560,7 @@ var require_isexe = __commonJS({
           });
         });
       }
-      core(path8, options || {}, function(er, is) {
+      core(path10, options || {}, function(er, is) {
         if (er) {
           if (er.code === "EACCES" || options && options.ignoreErrors) {
             er = null;
@@ -36485,9 +36570,9 @@ var require_isexe = __commonJS({
         cb(er, is);
       });
     }
-    function sync(path8, options) {
+    function sync(path10, options) {
       try {
-        return core.sync(path8, options || {});
+        return core.sync(path10, options || {});
       } catch (er) {
         if (options && options.ignoreErrors || er.code === "EACCES") {
           return false;
@@ -36499,9 +36584,9 @@ var require_isexe = __commonJS({
   }
 });
 
-// .yarn/cache/which-npm-3.0.1-b2b0f09ace-5c5f879943.zip/node_modules/which/lib/index.js
+// .yarn/cache/which-npm-3.0.1-b2b0f09ace-15263b0616.zip/node_modules/which/lib/index.js
 var require_lib2 = __commonJS({
-  ".yarn/cache/which-npm-3.0.1-b2b0f09ace-5c5f879943.zip/node_modules/which/lib/index.js"(exports, module2) {
+  ".yarn/cache/which-npm-3.0.1-b2b0f09ace-15263b0616.zip/node_modules/which/lib/index.js"(exports, module2) {
     var isexe = require_isexe();
     var { join: join2, delimiter, sep, posix } = require("path");
     var isWindows = process.platform === "win32";
@@ -36591,9 +36676,9 @@ var require_lib2 = __commonJS({
   }
 });
 
-// .yarn/cache/is-windows-npm-1.0.2-898cd6f3d7-ba7ae056a6.zip/node_modules/is-windows/index.js
+// .yarn/cache/is-windows-npm-1.0.2-898cd6f3d7-b32f418ab3.zip/node_modules/is-windows/index.js
 var require_is_windows = __commonJS({
-  ".yarn/cache/is-windows-npm-1.0.2-898cd6f3d7-ba7ae056a6.zip/node_modules/is-windows/index.js"(exports, module2) {
+  ".yarn/cache/is-windows-npm-1.0.2-898cd6f3d7-b32f418ab3.zip/node_modules/is-windows/index.js"(exports, module2) {
     (function(factory) {
       if (exports && typeof exports === "object" && typeof module2 !== "undefined") {
         module2.exports = factory();
@@ -36617,26 +36702,26 @@ var require_is_windows = __commonJS({
   }
 });
 
-// .yarn/cache/cmd-extension-npm-1.0.2-11aa204c4b-c0f4db69b5.zip/node_modules/cmd-extension/index.js
+// .yarn/cache/cmd-extension-npm-1.0.2-11aa204c4b-acdb425d51.zip/node_modules/cmd-extension/index.js
 var require_cmd_extension = __commonJS({
-  ".yarn/cache/cmd-extension-npm-1.0.2-11aa204c4b-c0f4db69b5.zip/node_modules/cmd-extension/index.js"(exports, module2) {
+  ".yarn/cache/cmd-extension-npm-1.0.2-11aa204c4b-acdb425d51.zip/node_modules/cmd-extension/index.js"(exports, module2) {
     "use strict";
-    var path8 = require("path");
+    var path10 = require("path");
     var cmdExtension;
     if (process.env.PATHEXT) {
-      cmdExtension = process.env.PATHEXT.split(path8.delimiter).find((ext) => ext.toUpperCase() === ".CMD");
+      cmdExtension = process.env.PATHEXT.split(path10.delimiter).find((ext) => ext.toUpperCase() === ".CMD");
     }
     module2.exports = cmdExtension || ".cmd";
   }
 });
 
-// .yarn/cache/@zkochan-cmd-shim-npm-6.0.0-97792a7373-bd05b9c123.zip/node_modules/@zkochan/cmd-shim/index.js
+// .yarn/cache/@zkochan-cmd-shim-npm-6.0.0-97792a7373-ba1442ba1e.zip/node_modules/@zkochan/cmd-shim/index.js
 var require_cmd_shim = __commonJS({
-  ".yarn/cache/@zkochan-cmd-shim-npm-6.0.0-97792a7373-bd05b9c123.zip/node_modules/@zkochan/cmd-shim/index.js"(exports, module2) {
+  ".yarn/cache/@zkochan-cmd-shim-npm-6.0.0-97792a7373-ba1442ba1e.zip/node_modules/@zkochan/cmd-shim/index.js"(exports, module2) {
     "use strict";
     cmdShim2.ifExists = cmdShimIfExists;
     var util_1 = require("util");
-    var path8 = require("path");
+    var path10 = require("path");
     var isWindows = require_is_windows();
     var CMD_EXTENSION = require_cmd_extension();
     var shebangExpr = /^#!\s*(?:\/usr\/bin\/env(?:\s+-S\s*)?)?\s*([^ \t]+)(.*)$/;
@@ -36657,15 +36742,15 @@ var require_cmd_shim = __commonJS({
     ]);
     function ingestOptions(opts) {
       const opts_ = { ...DEFAULT_OPTIONS, ...opts };
-      const fs6 = opts_.fs;
+      const fs8 = opts_.fs;
       opts_.fs_ = {
-        chmod: fs6.chmod ? (0, util_1.promisify)(fs6.chmod) : async () => {
+        chmod: fs8.chmod ? (0, util_1.promisify)(fs8.chmod) : async () => {
         },
-        mkdir: (0, util_1.promisify)(fs6.mkdir),
-        readFile: (0, util_1.promisify)(fs6.readFile),
-        stat: (0, util_1.promisify)(fs6.stat),
-        unlink: (0, util_1.promisify)(fs6.unlink),
-        writeFile: (0, util_1.promisify)(fs6.writeFile)
+        mkdir: (0, util_1.promisify)(fs8.mkdir),
+        readFile: (0, util_1.promisify)(fs8.readFile),
+        stat: (0, util_1.promisify)(fs8.stat),
+        unlink: (0, util_1.promisify)(fs8.unlink),
+        writeFile: (0, util_1.promisify)(fs8.writeFile)
       };
       return opts_;
     }
@@ -36677,8 +36762,8 @@ var require_cmd_shim = __commonJS({
       return cmdShim2(src, to, opts).catch(() => {
       });
     }
-    function rm2(path9, opts) {
-      return opts.fs_.unlink(path9).catch(() => {
+    function rm2(path11, opts) {
+      return opts.fs_.unlink(path11).catch(() => {
       });
     }
     async function cmdShim_(src, to, opts) {
@@ -36687,7 +36772,7 @@ var require_cmd_shim = __commonJS({
       return writeAllShims(src, to, srcRuntimeInfo, opts);
     }
     function writeShimsPreCommon(target, opts) {
-      return opts.fs_.mkdir(path8.dirname(target), { recursive: true });
+      return opts.fs_.mkdir(path10.dirname(target), { recursive: true });
     }
     function writeAllShims(src, to, srcRuntimeInfo, opts) {
       const opts_ = ingestOptions(opts);
@@ -36712,7 +36797,7 @@ var require_cmd_shim = __commonJS({
         const firstLine = data.trim().split(/\r*\n/)[0];
         const shebang = firstLine.match(shebangExpr);
         if (!shebang) {
-          const targetExtension = path8.extname(target).toLowerCase();
+          const targetExtension = path10.extname(target).toLowerCase();
           return {
             // undefined if extension is unknown but it's converted to null.
             program: extensionToProgramMap.get(targetExtension) || null,
@@ -36738,7 +36823,7 @@ var require_cmd_shim = __commonJS({
     function getExeExtension() {
       let cmdExtension;
       if (process.env.PATHEXT) {
-        cmdExtension = process.env.PATHEXT.split(path8.delimiter).find((ext) => ext.toLowerCase() === ".exe");
+        cmdExtension = process.env.PATHEXT.split(path10.delimiter).find((ext) => ext.toLowerCase() === ".exe");
       }
       return cmdExtension || ".exe";
     }
@@ -36754,9 +36839,9 @@ var require_cmd_shim = __commonJS({
       return writeShimPost(to, opts);
     }
     function generateCmdShim(src, to, opts) {
-      const shTarget = path8.relative(path8.dirname(to), src);
+      const shTarget = path10.relative(path10.dirname(to), src);
       let target = shTarget.split("/").join("\\");
-      const quotedPathToTarget = path8.isAbsolute(target) ? `"${target}"` : `"%~dp0\\${target}"`;
+      const quotedPathToTarget = path10.isAbsolute(target) ? `"${target}"` : `"%~dp0\\${target}"`;
       let longProg;
       let prog = opts.prog;
       let args = opts.args || "";
@@ -36802,11 +36887,11 @@ var require_cmd_shim = __commonJS({
       return cmd;
     }
     function generateShShim(src, to, opts) {
-      let shTarget = path8.relative(path8.dirname(to), src);
+      let shTarget = path10.relative(path10.dirname(to), src);
       let shProg = opts.prog && opts.prog.split("\\").join("/");
       let shLongProg;
       shTarget = shTarget.split("\\").join("/");
-      const quotedPathToTarget = path8.isAbsolute(shTarget) ? `"${shTarget}"` : `"$basedir/${shTarget}"`;
+      const quotedPathToTarget = path10.isAbsolute(shTarget) ? `"${shTarget}"` : `"$basedir/${shTarget}"`;
       let args = opts.args || "";
       const shNodePath = normalizePathEnvVar(opts.nodePath).posix;
       if (!shProg) {
@@ -36856,12 +36941,12 @@ exit $?
       return sh;
     }
     function generatePwshShim(src, to, opts) {
-      let shTarget = path8.relative(path8.dirname(to), src);
+      let shTarget = path10.relative(path10.dirname(to), src);
       const shProg = opts.prog && opts.prog.split("\\").join("/");
       let pwshProg = shProg && `"${shProg}$exe"`;
       let pwshLongProg;
       shTarget = shTarget.split("\\").join("/");
-      const quotedPathToTarget = path8.isAbsolute(shTarget) ? `"${shTarget}"` : `"$basedir/${shTarget}"`;
+      const quotedPathToTarget = path10.isAbsolute(shTarget) ? `"${shTarget}"` : `"$basedir/${shTarget}"`;
       let args = opts.args || "";
       let normalizedNodePathEnvVar = normalizePathEnvVar(opts.nodePath);
       const nodePath = normalizedNodePathEnvVar.win32;
@@ -36959,7 +37044,7 @@ ${nodePath ? "$env:NODE_PATH=$env_node_path\n" : ""}${prependPath ? "$env:PATH=$
           posix: ""
         };
       }
-      let split = typeof nodePath === "string" ? nodePath.split(path8.delimiter) : Array.from(nodePath);
+      let split = typeof nodePath === "string" ? nodePath.split(path10.delimiter) : Array.from(nodePath);
       let result = {};
       for (let i = 0; i < split.length; i++) {
         const win32 = split[i].split("/").join("\\");
@@ -36981,7 +37066,7 @@ __export(lib_exports2, {
 });
 module.exports = __toCommonJS(lib_exports2);
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/constants.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/constants.mjs
 var NODE_INITIAL = 0;
 var NODE_SUCCESS = 1;
 var NODE_ERRORED = 2;
@@ -36994,7 +37079,7 @@ var BATCH_REGEX = /^-[a-zA-Z]{2,}$/;
 var BINDING_REGEX = /^([^=]+)=([\s\S]*)$/;
 var DEBUG = process.env.DEBUG_CLI === `1`;
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/errors.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/errors.mjs
 var UsageError = class extends Error {
   constructor(message) {
     super(message);
@@ -37063,7 +37148,7 @@ var whileRunning = (input) => `While running ${input.filter((token) => {
   }
 }).join(` `)}`;
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/format.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/format.mjs
 var MAX_LINE_LENGTH = 80;
 var richLine = Array(MAX_LINE_LENGTH).fill(`\u2501`);
 for (let t = 0; t <= 24; ++t)
@@ -37122,7 +37207,7 @@ function formatMarkdownish(text, { format, paragraphs }) {
 ` : ``;
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/utils.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/utils.mjs
 var isOptionSymbol = Symbol(`clipanion/isOption`);
 function makeCommandOption(spec) {
   return { ...spec, [isOptionSymbol]: true };
@@ -37140,10 +37225,10 @@ function cleanValidationError(message, { mergeName = false } = {}) {
   const match = message.match(/^([^:]+): (.*)$/m);
   if (!match)
     return `validation failed`;
-  let [, path8, line] = match;
+  let [, path10, line] = match;
   if (mergeName)
     line = line[0].toLowerCase() + line.slice(1);
-  line = path8 !== `.` || !mergeName ? `${path8.replace(/^\.(\[|$)/, `$1`)}: ${line}` : `: ${line}`;
+  line = path10 !== `.` || !mergeName ? `${path10.replace(/^\.(\[|$)/, `$1`)}: ${line}` : `: ${line}`;
   return line;
 }
 function formatError(message, errors) {
@@ -37173,7 +37258,7 @@ function applyValidator(name, value, validator) {
   return value;
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/Command.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/Command.mjs
 var Command = class {
   constructor() {
     this.help = false;
@@ -37220,7 +37305,7 @@ var Command = class {
 Command.isOption = isOptionSymbol;
 Command.Default = [];
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/core.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/core.mjs
 function debug(str) {
   if (DEBUG) {
     console.log(str);
@@ -37729,8 +37814,8 @@ var CommandBuilder = class {
     this.cliIndex = cliIndex;
     this.cliOpts = cliOpts;
   }
-  addPath(path8) {
-    this.paths.push(path8);
+  addPath(path10) {
+    this.paths.push(path10);
   }
   setArity({ leading = this.arity.leading, trailing = this.arity.trailing, extra = this.arity.extra, proxy = this.arity.proxy }) {
     Object.assign(this.arity, { leading, trailing, extra, proxy });
@@ -37814,17 +37899,17 @@ var CommandBuilder = class {
     registerStatic(machine, NODE_INITIAL, START_OF_INPUT, firstNode, [`setCandidateState`, { candidateUsage, requiredOptions }]);
     const positionalArgument = this.arity.proxy ? `always` : `isNotOptionLike`;
     const paths = this.paths.length > 0 ? this.paths : [[]];
-    for (const path8 of paths) {
+    for (const path10 of paths) {
       let lastPathNode = firstNode;
-      if (path8.length > 0) {
+      if (path10.length > 0) {
         const optionPathNode = injectNode(machine, makeNode());
         registerShortcut(machine, lastPathNode, optionPathNode);
         this.registerOptions(machine, optionPathNode);
         lastPathNode = optionPathNode;
       }
-      for (let t = 0; t < path8.length; ++t) {
+      for (let t = 0; t < path10.length; ++t) {
         const nextPathNode = injectNode(machine, makeNode());
-        registerStatic(machine, lastPathNode, path8[t], nextPathNode, `pushPath`);
+        registerStatic(machine, lastPathNode, path10[t], nextPathNode, `pushPath`);
         lastPathNode = nextPathNode;
       }
       if (this.arity.leading.length > 0 || !this.arity.proxy) {
@@ -37969,7 +38054,7 @@ var CliBuilder = class {
   }
 };
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/platform/node.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/platform/node.mjs
 var import_tty = __toESM(require("tty"), 1);
 function getDefaultColorDepth() {
   if (import_tty.default && `getColorDepth` in import_tty.default.WriteStream.prototype)
@@ -38010,7 +38095,7 @@ function getCaptureActivator(context) {
   };
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/HelpCommand.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/HelpCommand.mjs
 var HelpCommand = class extends Command {
   constructor(contexts) {
     super();
@@ -38060,7 +38145,7 @@ var HelpCommand = class extends Command {
   }
 };
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/Cli.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/Cli.mjs
 var errorCommandSymbol = Symbol(`clipanion/errorCommand`);
 var Cli = class {
   constructor({ binaryLabel, binaryName: binaryNameOpt = `...`, binaryVersion, enableCapture = false, enableColors } = {}) {
@@ -38102,8 +38187,8 @@ var Cli = class {
     const index = builder.cliIndex;
     const paths = (_a = commandClass.paths) !== null && _a !== void 0 ? _a : command.paths;
     if (typeof paths !== `undefined`)
-      for (const path8 of paths)
-        builder.addPath(path8);
+      for (const path10 of paths)
+        builder.addPath(path10);
     this.registrations.set(commandClass, { specs, builder, index });
     for (const [key, { definition }] of specs.entries())
       definition(builder, key);
@@ -38203,13 +38288,13 @@ var Cli = class {
     for (const [commandClass, { index }] of this.registrations) {
       if (typeof commandClass.usage === `undefined`)
         continue;
-      const { usage: path8 } = this.getUsageByIndex(index, { detailed: false });
+      const { usage: path10 } = this.getUsageByIndex(index, { detailed: false });
       const { usage, options } = this.getUsageByIndex(index, { detailed: true, inlineOptions: false });
       const category = typeof commandClass.usage.category !== `undefined` ? formatMarkdownish(commandClass.usage.category, { format: this.format(colored), paragraphs: false }) : void 0;
       const description = typeof commandClass.usage.description !== `undefined` ? formatMarkdownish(commandClass.usage.description, { format: this.format(colored), paragraphs: false }) : void 0;
       const details = typeof commandClass.usage.details !== `undefined` ? formatMarkdownish(commandClass.usage.details, { format: this.format(colored), paragraphs: true }) : void 0;
       const examples = typeof commandClass.usage.examples !== `undefined` ? commandClass.usage.examples.map(([label, cli]) => [formatMarkdownish(label, { format: this.format(colored), paragraphs: false }), cli.replace(/\$0/g, this.binaryName)]) : void 0;
-      data.push({ path: path8, usage, category, description, details, examples, options });
+      data.push({ path: path10, usage, category, description, details, examples, options });
     }
     return data;
   }
@@ -38220,7 +38305,7 @@ var Cli = class {
         const paths = commandClass2.paths;
         const isDocumented = typeof commandClass2.usage !== `undefined`;
         const isExclusivelyDefault = !paths || paths.length === 0 || paths.length === 1 && paths[0].length === 0;
-        const isDefault = isExclusivelyDefault || ((_a = paths === null || paths === void 0 ? void 0 : paths.some((path8) => path8.length === 0)) !== null && _a !== void 0 ? _a : false);
+        const isDefault = isExclusivelyDefault || ((_a = paths === null || paths === void 0 ? void 0 : paths.some((path10) => path10.length === 0)) !== null && _a !== void 0 ? _a : false);
         if (isDefault) {
           if (command) {
             command = null;
@@ -38412,7 +38497,7 @@ function noopCaptureActivator(fn2) {
   return fn2();
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/builtins/index.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/builtins/index.mjs
 var builtins_exports = {};
 __export(builtins_exports, {
   DefinitionsCommand: () => DefinitionsCommand,
@@ -38420,7 +38505,7 @@ __export(builtins_exports, {
   VersionCommand: () => VersionCommand
 });
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/builtins/definitions.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/builtins/definitions.mjs
 var DefinitionsCommand = class extends Command {
   async execute() {
     this.context.stdout.write(`${JSON.stringify(this.cli.definitions(), null, 2)}
@@ -38429,7 +38514,7 @@ var DefinitionsCommand = class extends Command {
 };
 DefinitionsCommand.paths = [[`--clipanion=definitions`]];
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/builtins/help.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/builtins/help.mjs
 var HelpCommand2 = class extends Command {
   async execute() {
     this.context.stdout.write(this.cli.usage());
@@ -38437,7 +38522,7 @@ var HelpCommand2 = class extends Command {
 };
 HelpCommand2.paths = [[`-h`], [`--help`]];
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/builtins/version.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/builtins/version.mjs
 var VersionCommand = class extends Command {
   async execute() {
     var _a;
@@ -38447,7 +38532,7 @@ var VersionCommand = class extends Command {
 };
 VersionCommand.paths = [[`-v`], [`--version`]];
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/index.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/index.mjs
 var options_exports = {};
 __export(options_exports, {
   Array: () => Array2,
@@ -38464,7 +38549,7 @@ __export(options_exports, {
   rerouteArguments: () => rerouteArguments
 });
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/Array.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/Array.mjs
 function Array2(descriptor, initialValueBase, optsBase) {
   const [initialValue, opts] = rerouteArguments(initialValueBase, optsBase !== null && optsBase !== void 0 ? optsBase : {});
   const { arity = 1 } = opts;
@@ -38499,7 +38584,7 @@ function Array2(descriptor, initialValueBase, optsBase) {
   });
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/Boolean.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/Boolean.mjs
 function Boolean2(descriptor, initialValueBase, optsBase) {
   const [initialValue, opts] = rerouteArguments(initialValueBase, optsBase !== null && optsBase !== void 0 ? optsBase : {});
   const optNames = descriptor.split(`,`);
@@ -38527,7 +38612,7 @@ function Boolean2(descriptor, initialValueBase, optsBase) {
   });
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/Counter.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/Counter.mjs
 function Counter(descriptor, initialValueBase, optsBase) {
   const [initialValue, opts] = rerouteArguments(initialValueBase, optsBase !== null && optsBase !== void 0 ? optsBase : {});
   const optNames = descriptor.split(`,`);
@@ -38560,7 +38645,7 @@ function Counter(descriptor, initialValueBase, optsBase) {
   });
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/Proxy.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/Proxy.mjs
 function Proxy2(opts = {}) {
   return makeCommandOption({
     definition(builder, key) {
@@ -38576,7 +38661,7 @@ function Proxy2(opts = {}) {
   });
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/Rest.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/Rest.mjs
 function Rest(opts = {}) {
   return makeCommandOption({
     definition(builder, key) {
@@ -38603,7 +38688,7 @@ function Rest(opts = {}) {
   });
 }
 
-// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fb3428b745.zip/node_modules/clipanion/lib/advanced/options/String.mjs
+// .yarn/__virtual__/clipanion-virtual-cc0a4bf4ff/0/cache/clipanion-npm-3.2.0-8b68f8056b-fcc3d44145.zip/node_modules/clipanion/lib/advanced/options/String.mjs
 function StringOption(descriptor, initialValueBase, optsBase) {
   const [initialValue, opts] = rerouteArguments(initialValueBase, optsBase !== null && optsBase !== void 0 ? optsBase : {});
   const { arity = 1 } = opts;
@@ -38675,7 +38760,7 @@ function String2(descriptor, ...args) {
 }
 
 // package.json
-var version = "0.19.0";
+var version = "0.21.0";
 
 // sources/Engine.ts
 var import_fs3 = __toESM(require("fs"));
@@ -38687,7 +38772,7 @@ var import_semver3 = __toESM(require_semver2());
 var config_default = {
   definitions: {
     npm: {
-      default: "9.7.2+sha1.95fdbba1b3b8e918f253cac1a45b38655f324ed5",
+      default: "10.2.0+sha1.2e4f7aba9cd913de8747d45b3dd5fb43615a4139",
       fetchLatestFrom: {
         type: "npm",
         package: "npm"
@@ -38713,12 +38798,18 @@ var config_default = {
           registry: {
             type: "npm",
             package: "npm"
+          },
+          commands: {
+            use: [
+              "npm",
+              "install"
+            ]
           }
         }
       }
     },
     pnpm: {
-      default: "8.6.3+sha1.30b2ad9776a393ccd1766239fd21e0c14a3c3acf",
+      default: "8.8.0+sha1.9922e8b650d393700209ccd81e0ebdbcbe43b0d3",
       fetchLatestFrom: {
         type: "npm",
         package: "pnpm"
@@ -38748,6 +38839,12 @@ var config_default = {
           registry: {
             type: "npm",
             package: "pnpm"
+          },
+          commands: {
+            use: [
+              "pnpm",
+              "install"
+            ]
           }
         },
         ">=6.0.0": {
@@ -38759,6 +38856,12 @@ var config_default = {
           registry: {
             type: "npm",
             package: "pnpm"
+          },
+          commands: {
+            use: [
+              "pnpm",
+              "install"
+            ]
           }
         }
       }
@@ -38770,7 +38873,7 @@ var config_default = {
         package: "yarn"
       },
       transparent: {
-        default: "3.6.0+sha224.19e47520fa56c6146388fdeb438d9dcf6630c3f277a2e1180995c3bb",
+        default: "3.6.4+sha224.4b0b0a9cf41b177779b701850108387d3189ba7c93bd1a535fafbf72",
         commands: [
           [
             "yarn",
@@ -38788,6 +38891,12 @@ var config_default = {
           registry: {
             type: "npm",
             package: "yarn"
+          },
+          commands: {
+            use: [
+              "yarn",
+              "install"
+            ]
           }
         },
         ">=2.0.0": {
@@ -38804,6 +38913,12 @@ var config_default = {
               tags: "latest",
               versions: "tags"
             }
+          },
+          commands: {
+            use: [
+              "yarn",
+              "install"
+            ]
           }
         }
       }
@@ -38854,10 +38969,10 @@ function getTemporaryFolder(target = (0, import_os.tmpdir)()) {
   while (true) {
     const rnd = Math.random() * 4294967296;
     const hex = rnd.toString(16).padStart(8, `0`);
-    const path8 = (0, import_path.join)(target, `corepack-${import_process.default.pid}-${hex}`);
+    const path10 = (0, import_path.join)(target, `corepack-${import_process.default.pid}-${hex}`);
     try {
-      (0, import_fs.mkdirSync)(path8);
-      return path8;
+      (0, import_fs.mkdirSync)(path10);
+      return path10;
     } catch (error) {
       if (error.code === `EEXIST`) {
         continue;
@@ -38870,8 +38985,8 @@ function getTemporaryFolder(target = (0, import_os.tmpdir)()) {
 
 // sources/fsUtils.ts
 var import_promises = require("fs/promises");
-async function rimraf(path8) {
-  return (0, import_promises.rm)(path8, { recursive: true, force: true });
+async function rimraf(path10) {
+  return (0, import_promises.rm)(path10, { recursive: true, force: true });
 }
 
 // sources/httpUtils.ts
@@ -39027,9 +39142,15 @@ async function installVersion(installTarget, locator, { spec }) {
   const { default: tar } = await Promise.resolve().then(() => __toESM(require_tar()));
   const { version: version2, build } = import_semver.default.parse(locator.reference);
   const installFolder = import_path2.default.join(installTarget, locator.name, version2);
-  if (import_fs2.default.existsSync(installFolder)) {
+  const corepackFile = import_path2.default.join(installFolder, `.corepack`);
+  if (import_fs2.default.existsSync(corepackFile)) {
+    const corepackContent = await import_fs2.default.promises.readFile(corepackFile, `utf8`);
+    const corepackData = JSON.parse(corepackContent);
     log(`Reusing ${locator.name}@${locator.reference}`);
-    return installFolder;
+    return {
+      hash: corepackData.hash,
+      location: installFolder
+    };
   }
   const defaultNpmRegistryURL = spec.url.replace(`{}`, version2);
   const url = process.env.COREPACK_NPM_REGISTRY ? defaultNpmRegistryURL.replace(
@@ -39050,11 +39171,21 @@ async function installVersion(installTarget, locator, { spec }) {
     sendTo = import_fs2.default.createWriteStream(outputFile);
   }
   stream.pipe(sendTo);
-  const hash = build[0] ? stream.pipe((0, import_crypto.createHash)(build[0])) : null;
+  const algo = build[0] ?? `sha256`;
+  const hash = stream.pipe((0, import_crypto.createHash)(algo));
   await (0, import_events.once)(sendTo, `finish`);
-  const actualHash = hash?.digest(`hex`);
-  if (actualHash !== build[1])
+  const actualHash = hash.digest(`hex`);
+  if (build[1] && actualHash !== build[1])
     throw new Error(`Mismatch hashes. Expected ${build[1]}, got ${actualHash}`);
+  const serializedHash = `${algo}.${actualHash}`;
+  await import_fs2.default.promises.writeFile(import_path2.default.join(tmpFolder, `.corepack`), JSON.stringify({
+    locator,
+    hash: serializedHash
+  }));
+  await import_fs2.default.promises.rm(installFolder, {
+    recursive: true,
+    force: true
+  });
   await import_fs2.default.promises.mkdir(import_path2.default.dirname(installFolder), { recursive: true });
   try {
     await import_fs2.default.promises.rename(tmpFolder, installFolder);
@@ -39068,7 +39199,10 @@ async function installVersion(installTarget, locator, { spec }) {
     }
   }
   log(`Install finished`);
-  return installFolder;
+  return {
+    location: installFolder,
+    hash: serializedHash
+  };
 }
 async function runVersion(locator, installSpec, binName, args) {
   let binPath = null;
@@ -39167,6 +39301,16 @@ var Engine = class {
     }
     return null;
   }
+  getPackageManagerSpecFor(locator) {
+    const definition = this.config.definitions[locator.name];
+    if (typeof definition === `undefined`)
+      throw new UsageError(`This package manager (${locator.name}) isn't supported by this corepack build`);
+    const ranges = Object.keys(definition.ranges).reverse();
+    const range = ranges.find((range2) => satisfiesWithPrereleases(locator.reference, range2));
+    if (typeof range === `undefined`)
+      throw new Error(`Assertion failed: Specified resolution (${locator.reference}) isn't supported by any of ${ranges.join(`, `)}`);
+    return definition.ranges[range];
+  }
   getBinariesFor(name) {
     const binNames = /* @__PURE__ */ new Set();
     for (const rangeDefinition of Object.values(this.config.definitions[name].ranges)) {
@@ -39222,20 +39366,17 @@ var Engine = class {
 `);
   }
   async ensurePackageManager(locator) {
-    const definition = this.config.definitions[locator.name];
-    if (typeof definition === `undefined`)
-      throw new UsageError(`This package manager (${locator.name}) isn't supported by this corepack build`);
-    const ranges = Object.keys(definition.ranges).reverse();
-    const range = ranges.find((range2) => satisfiesWithPrereleases(locator.reference, range2));
-    if (typeof range === `undefined`)
-      throw new Error(`Assertion failed: Specified resolution (${locator.reference}) isn't supported by any of ${ranges.join(`, `)}`);
-    const installedLocation = await installVersion(getInstallFolder(), locator, {
-      spec: definition.ranges[range]
+    const spec = this.getPackageManagerSpecFor(locator);
+    const packageManagerInfo = await installVersion(getInstallFolder(), locator, {
+      spec
     });
     return {
-      location: installedLocation,
-      spec: definition.ranges[range]
+      ...packageManagerInfo,
+      locator,
+      spec
     };
+  }
+  async fetchAvailableVersions() {
   }
   async resolveDescriptor(descriptor, { allowTags = false, useCache = true } = {}) {
     const definition = this.config.definitions[descriptor.name];
@@ -39244,7 +39385,7 @@ var Engine = class {
     let finalDescriptor = descriptor;
     if (!import_semver3.default.valid(descriptor.range) && !import_semver3.default.validRange(descriptor.range)) {
       if (!allowTags)
-        throw new UsageError(`Packages managers can't be referended via tags in this context`);
+        throw new UsageError(`Packages managers can't be referenced via tags in this context`);
       const ranges = Object.keys(definition.ranges);
       const tagRange = ranges[ranges.length - 1];
       const tags = await fetchAvailableTags2(definition.ranges[tagRange].registry);
@@ -39260,21 +39401,14 @@ var Engine = class {
       return { name: finalDescriptor.name, reference: cachedVersion };
     if (import_semver3.default.valid(finalDescriptor.range))
       return { name: finalDescriptor.name, reference: finalDescriptor.range };
-    const candidateRangeDefinitions = Object.keys(definition.ranges).filter((range) => {
-      return satisfiesWithPrereleases(finalDescriptor.range, range);
-    });
-    const tagResolutions = await Promise.all(candidateRangeDefinitions.map(async (range) => {
-      return [range, await fetchAvailableVersions2(definition.ranges[range].registry)];
+    const versions = await Promise.all(Object.keys(definition.ranges).map(async (range) => {
+      const versions2 = await fetchAvailableVersions2(definition.ranges[range].registry);
+      return versions2.filter((version2) => satisfiesWithPrereleases(version2, finalDescriptor.range));
     }));
-    const resolutionMap = /* @__PURE__ */ new Map();
-    for (const [range, resolutions] of tagResolutions)
-      for (const entry of resolutions)
-        resolutionMap.set(entry, range);
-    const candidates = [...resolutionMap.keys()];
-    const maxSatisfying = import_semver3.default.maxSatisfying(candidates, finalDescriptor.range);
-    if (maxSatisfying === null)
+    const highestVersion = [...new Set(versions.flat())].sort(import_semver3.default.rcompare);
+    if (highestVersion.length === 0)
       return null;
-    return { name: finalDescriptor.name, reference: maxSatisfying };
+    return { name: finalDescriptor.name, reference: highestVersion[0] };
   }
   getLastKnownGoodFile() {
     return import_path3.default.join(getInstallFolder(), `lastKnownGood.json`);
@@ -39286,13 +39420,10 @@ var import_fs4 = __toESM(require("fs"));
 var import_path4 = __toESM(require("path"));
 var import_which = __toESM(require_lib2());
 var DisableCommand = class extends Command {
-  constructor() {
-    super(...arguments);
-    this.installDirectory = options_exports.String(`--install-directory`, {
-      description: `Where the shims are located`
-    });
-    this.names = options_exports.Rest();
-  }
+  installDirectory = options_exports.String(`--install-directory`, {
+    description: `Where the shims are located`
+  });
+  names = options_exports.Rest();
   async execute() {
     let installDirectory = this.installDirectory;
     if (typeof installDirectory === `undefined`)
@@ -39333,10 +39464,10 @@ var DisableCommand = class extends Command {
     }
   }
 };
-DisableCommand.paths = [
+__publicField(DisableCommand, "paths", [
   [`disable`]
-];
-DisableCommand.usage = Command.Usage({
+]);
+__publicField(DisableCommand, "usage", Command.Usage({
   description: `Remove the Corepack shims from the install directory`,
   details: `
       When run, this command will remove the shims for the specified package managers from the install directory, or all shims if no parameters are passed.
@@ -39353,7 +39484,7 @@ DisableCommand.usage = Command.Usage({
     `Disable the Yarn shim only`,
     `$0 disable yarn`
   ]]
-});
+}));
 
 // sources/commands/Enable.ts
 var import_cmd_shim = __toESM(require_cmd_shim());
@@ -39361,13 +39492,10 @@ var import_fs5 = __toESM(require("fs"));
 var import_path5 = __toESM(require("path"));
 var import_which2 = __toESM(require_lib2());
 var EnableCommand = class extends Command {
-  constructor() {
-    super(...arguments);
-    this.installDirectory = options_exports.String(`--install-directory`, {
-      description: `Where the shims are to be installed`
-    });
-    this.names = options_exports.Rest();
-  }
+  installDirectory = options_exports.String(`--install-directory`, {
+    description: `Where the shims are to be installed`
+  });
+  names = options_exports.Rest();
   async execute() {
     let installDirectory = this.installDirectory;
     if (typeof installDirectory === `undefined`)
@@ -39410,10 +39538,10 @@ var EnableCommand = class extends Command {
     });
   }
 };
-EnableCommand.paths = [
+__publicField(EnableCommand, "paths", [
   [`enable`]
-];
-EnableCommand.usage = Command.Usage({
+]);
+__publicField(EnableCommand, "usage", Command.Usage({
   description: `Add the Corepack shims to the install directories`,
   details: `
       When run, this commmand will check whether the shims for the specified package managers can be found with the correct values inside the install directory. If not, or if they don't exist, they will be created.
@@ -39430,80 +39558,15 @@ EnableCommand.usage = Command.Usage({
     `Enable the Yarn shim only`,
     `$0 enable yarn`
   ]]
-});
+}));
 
-// sources/commands/Hydrate.ts
-var import_promises2 = require("fs/promises");
-var import_path6 = __toESM(require("path"));
-var HydrateCommand = class extends Command {
-  constructor() {
-    super(...arguments);
-    this.activate = options_exports.Boolean(`--activate`, false, {
-      description: `If true, this release will become the default one for this package manager`
-    });
-    this.fileName = options_exports.String();
-  }
-  async execute() {
-    const installFolder = getInstallFolder();
-    const fileName = import_path6.default.resolve(this.context.cwd, this.fileName);
-    const archiveEntries = /* @__PURE__ */ new Map();
-    let hasShortEntries = false;
-    const { default: tar } = await Promise.resolve().then(() => __toESM(require_tar()));
-    await tar.t({ file: fileName, onentry: (entry) => {
-      const segments = entry.path.split(/\//g);
-      if (segments.length < 3) {
-        hasShortEntries = true;
-      } else {
-        let references = archiveEntries.get(segments[0]);
-        if (typeof references === `undefined`)
-          archiveEntries.set(segments[0], references = /* @__PURE__ */ new Set());
-        references.add(segments[1]);
-      }
-    } });
-    if (hasShortEntries || archiveEntries.size < 1)
-      throw new UsageError(`Invalid archive format; did it get generated by 'corepack prepare'?`);
-    for (const [name, references] of archiveEntries) {
-      for (const reference of references) {
-        if (!isSupportedPackageManager(name))
-          throw new UsageError(`Unsupported package manager '${name}'`);
-        if (this.activate)
-          this.context.stdout.write(`Hydrating ${name}@${reference} for immediate activation...
-`);
-        else
-          this.context.stdout.write(`Hydrating ${name}@${reference}...
-`);
-        await (0, import_promises2.mkdir)(installFolder, { recursive: true });
-        await tar.x({ file: fileName, cwd: installFolder }, [`${name}/${reference}`]);
-        if (this.activate) {
-          await this.context.engine.activatePackageManager({ name, reference });
-        }
-      }
-    }
-    this.context.stdout.write(`All done!
-`);
-  }
-};
-HydrateCommand.paths = [
-  [`hydrate`]
-];
-HydrateCommand.usage = Command.Usage({
-  description: `Import a package manager into the cache`,
-  details: `
-      This command unpacks a package manager archive into the cache. The archive must have been generated by the \`corepack prepare\` command - no other will work.
-    `,
-  examples: [[
-    `Import a package manager in the cache`,
-    `$0 hydrate corepack.tgz`
-  ]]
-});
-
-// sources/commands/Prepare.ts
-var import_promises3 = require("fs/promises");
-var import_path8 = __toESM(require("path"));
+// sources/commands/InstallGlobal.ts
+var import_fs8 = __toESM(require("fs"));
+var import_path7 = __toESM(require("path"));
 
 // sources/specUtils.ts
 var import_fs6 = __toESM(require("fs"));
-var import_path7 = __toESM(require("path"));
+var import_path6 = __toESM(require("path"));
 var import_semver4 = __toESM(require_semver2());
 var nodeModulesRegExp = /[\\/]node_modules[\\/](@[^\\/]*[\\/])?([^@\\/][^\\/]*)$/;
 function parseSpec(raw, source, { enforceExactVersion = true } = {}) {
@@ -39556,10 +39619,10 @@ async function loadSpec(initialCwd) {
   let selection = null;
   while (nextCwd !== currCwd && (!selection || !selection.data.packageManager)) {
     currCwd = nextCwd;
-    nextCwd = import_path7.default.dirname(currCwd);
+    nextCwd = import_path6.default.dirname(currCwd);
     if (nodeModulesRegExp.test(currCwd))
       continue;
-    const manifestPath = import_path7.default.join(currCwd, `package.json`);
+    const manifestPath = import_path6.default.join(currCwd, `package.json`);
     if (!import_fs6.default.existsSync(manifestPath))
       continue;
     const content = await import_fs6.default.promises.readFile(manifestPath, `utf8`);
@@ -39569,39 +39632,452 @@ async function loadSpec(initialCwd) {
     } catch {
     }
     if (typeof data !== `object` || data === null)
-      throw new UsageError(`Invalid package.json in ${import_path7.default.relative(initialCwd, manifestPath)}`);
+      throw new UsageError(`Invalid package.json in ${import_path6.default.relative(initialCwd, manifestPath)}`);
     selection = { data, manifestPath };
   }
   if (selection === null)
-    return { type: `NoProject`, target: import_path7.default.join(initialCwd, `package.json`) };
+    return { type: `NoProject`, target: import_path6.default.join(initialCwd, `package.json`) };
   const rawPmSpec = selection.data.packageManager;
   if (typeof rawPmSpec === `undefined`)
     return { type: `NoSpec`, target: selection.manifestPath };
   return {
     type: `Found`,
-    spec: parseSpec(rawPmSpec, import_path7.default.relative(initialCwd, selection.manifestPath))
+    target: selection.manifestPath,
+    spec: parseSpec(rawPmSpec, import_path6.default.relative(initialCwd, selection.manifestPath))
   };
 }
 
-// sources/commands/Prepare.ts
-var PrepareCommand = class extends Command {
-  constructor() {
-    super(...arguments);
-    this.activate = options_exports.Boolean(`--activate`, false, {
-      description: `If true, this release will become the default one for this package manager`
-    });
-    this.all = options_exports.Boolean(`--all`, false, {
-      description: `If true, all available default package managers will be installed`
-    });
-    this.json = options_exports.Boolean(`--json`, false, {
-      description: `If true, the output will be the path of the generated tarball`
-    });
-    this.output = options_exports.String(`-o,--output`, {
-      description: `If true, the installed package managers will also be stored in a tarball`,
-      tolerateBoolean: true
-    });
-    this.specs = options_exports.Rest();
+// sources/commands/Base.ts
+var import_fs7 = __toESM(require("fs"));
+
+// sources/nodeUtils.ts
+var import_os2 = __toESM(require("os"));
+function getEndOfLine(content) {
+  const matches = content.match(/\r?\n/g);
+  if (matches === null)
+    return import_os2.default.EOL;
+  const crlf = matches.filter((nl) => nl === `\r
+`).length;
+  const lf = matches.length - crlf;
+  return crlf > lf ? `\r
+` : `
+`;
+}
+function normalizeLineEndings(originalContent, newContent) {
+  return newContent.replace(/\r?\n/g, getEndOfLine(originalContent));
+}
+function getIndent(content) {
+  const indentMatch = content.match(/^[ \t]+/m);
+  if (indentMatch) {
+    return indentMatch[0];
+  } else {
+    return `  `;
   }
+}
+function stripBOM(content) {
+  if (content.charCodeAt(0) === 65279) {
+    return content.slice(1);
+  } else {
+    return content;
+  }
+}
+function readPackageJson(content) {
+  return {
+    data: JSON.parse(stripBOM(content) || `{}`),
+    indent: getIndent(content)
+  };
+}
+
+// sources/commands/Base.ts
+var BaseCommand = class extends Command {
+  async resolvePatternsToDescriptors({ all, patterns }) {
+    if (all && patterns.length > 0)
+      throw new UsageError(`The --all option cannot be used along with an explicit package manager specification`);
+    const resolvedSpecs = all ? await this.context.engine.getDefaultDescriptors() : patterns.map((pattern) => parseSpec(pattern, `CLI arguments`, { enforceExactVersion: false }));
+    if (resolvedSpecs.length === 0) {
+      const lookup = await loadSpec(this.context.cwd);
+      switch (lookup.type) {
+        case `NoProject`:
+          throw new UsageError(`Couldn't find a project in the local directory - please explicit the package manager to pack, or run this command from a valid project`);
+        case `NoSpec`:
+          throw new UsageError(`The local project doesn't feature a 'packageManager' field - please explicit the package manager to pack, or update the manifest to reference it`);
+        default: {
+          return [lookup.spec];
+        }
+      }
+    }
+    return resolvedSpecs;
+  }
+  async setLocalPackageManager(info) {
+    const lookup = await loadSpec(this.context.cwd);
+    const content = lookup.target !== `NoProject` ? await import_fs7.default.promises.readFile(lookup.target, `utf8`) : ``;
+    const { data, indent } = readPackageJson(content);
+    const previousPackageManager = data.packageManager ?? `unknown`;
+    data.packageManager = `${info.locator.name}@${info.locator.reference}+${info.hash}`;
+    const newContent = normalizeLineEndings(content, `${JSON.stringify(data, null, indent)}
+`);
+    await import_fs7.default.promises.writeFile(lookup.target, newContent, `utf8`);
+    const command = this.context.engine.getPackageManagerSpecFor(info.locator).commands?.use ?? null;
+    if (command === null)
+      return 0;
+    process.env.COREPACK_MIGRATE_FROM = previousPackageManager;
+    this.context.stdout.write(`
+`);
+    const [binaryName, ...args] = command;
+    return await runVersion(info.locator, info, binaryName, args);
+  }
+};
+
+// sources/commands/InstallGlobal.ts
+var InstallGlobalCommand = class extends BaseCommand {
+  global = options_exports.Boolean(`-g,--global`, {
+    required: true
+  });
+  all = options_exports.Boolean(`--all`, false, {
+    description: `If true, all available default package managers will be installed`
+  });
+  cacheOnly = options_exports.Boolean(`--cache-only`, false, {
+    description: `If true, the package managers will only be cached, not set as new defaults`
+  });
+  args = options_exports.Rest();
+  async execute() {
+    if (this.args.length === 0 && !this.all)
+      throw new UsageError(`No package managers specified; use --all to install all available package managers, or specify one or more package managers to proceed`);
+    if (!this.all) {
+      for (const arg of this.args) {
+        if (arg.endsWith(`.tgz`)) {
+          await this.installFromTarball(import_path7.default.resolve(this.context.cwd, arg));
+        } else {
+          await this.installFromDescriptor(parseSpec(arg, `CLI arguments`, { enforceExactVersion: false }));
+        }
+      }
+    } else {
+      for (const descriptor of await this.context.engine.getDefaultDescriptors()) {
+        await this.installFromDescriptor(descriptor);
+      }
+    }
+  }
+  log(locator) {
+    if (this.cacheOnly) {
+      this.context.stdout.write(`Adding ${locator.name}@${locator.reference} to the cache...
+`);
+    } else {
+      this.context.stdout.write(`Installing ${locator.name}@${locator.reference}...
+`);
+    }
+  }
+  async installFromDescriptor(descriptor) {
+    const resolved = await this.context.engine.resolveDescriptor(descriptor, { allowTags: true, useCache: false });
+    if (resolved === null)
+      throw new UsageError(`Failed to successfully resolve '${descriptor.range}' to a valid ${descriptor.name} release`);
+    this.log(resolved);
+    await this.context.engine.ensurePackageManager(resolved);
+    if (!this.cacheOnly) {
+      await this.context.engine.activatePackageManager(resolved);
+    }
+  }
+  async installFromTarball(p) {
+    const installFolder = getInstallFolder();
+    const archiveEntries = /* @__PURE__ */ new Map();
+    const { default: tar } = await Promise.resolve().then(() => __toESM(require_tar()));
+    let hasShortEntries = false;
+    await tar.t({ file: p, onentry: (entry) => {
+      const segments = entry.path.split(/\//g);
+      if (segments.length > 0 && segments[segments.length - 1] !== `.corepack`)
+        return;
+      if (segments.length < 3) {
+        hasShortEntries = true;
+      } else {
+        let references = archiveEntries.get(segments[0]);
+        if (typeof references === `undefined`)
+          archiveEntries.set(segments[0], references = /* @__PURE__ */ new Set());
+        references.add(segments[1]);
+      }
+    } });
+    if (hasShortEntries || archiveEntries.size < 1)
+      throw new UsageError(`Invalid archive format; did it get generated by 'corepack pack'?`);
+    for (const [name, references] of archiveEntries) {
+      for (const reference of references) {
+        if (!isSupportedPackageManager(name))
+          throw new UsageError(`Unsupported package manager '${name}'`);
+        this.log({ name, reference });
+        await import_fs8.default.promises.mkdir(installFolder, { recursive: true });
+        await tar.x({ file: p, cwd: installFolder }, [`${name}/${reference}`]);
+        if (!this.cacheOnly) {
+          await this.context.engine.activatePackageManager({ name, reference });
+        }
+      }
+    }
+  }
+};
+__publicField(InstallGlobalCommand, "paths", [
+  [`install`]
+]);
+__publicField(InstallGlobalCommand, "usage", Command.Usage({
+  description: `Install package managers on the system`,
+  details: `
+      Download the selected package managers and install them on the system.
+
+      Package managers thus installed will be configured as the new default when calling their respective binaries outside of projects defining the 'packageManager' field.
+    `,
+  examples: [[
+    `Install the latest version of Yarn 1.x and make it globally available`,
+    `corepack install -g yarn@^1`
+  ], [
+    `Install the latest version of all available package managers, and make them globally available`,
+    `corepack install -g --all`
+  ]]
+}));
+
+// sources/commands/InstallLocal.ts
+var InstallLocalCommand = class extends BaseCommand {
+  async execute() {
+    const [descriptor] = await this.resolvePatternsToDescriptors({
+      all: false,
+      patterns: []
+    });
+    const resolved = await this.context.engine.resolveDescriptor(descriptor, { allowTags: true });
+    if (resolved === null)
+      throw new UsageError(`Failed to successfully resolve '${descriptor.range}' to a valid ${descriptor.name} release`);
+    this.context.stdout.write(`Adding ${resolved.name}@${resolved.reference} to the cache...
+`);
+    await this.context.engine.ensurePackageManager(resolved);
+  }
+};
+__publicField(InstallLocalCommand, "paths", [
+  [`install`]
+]);
+__publicField(InstallLocalCommand, "usage", Command.Usage({
+  description: `Install the package manager configured in the local project`,
+  details: `
+      Download and install the package manager configured in the local project. This command doesn't change the global version used when running the package manager from outside the project (use the \`-g,--global\` flag if you wish to do this).
+    `,
+  examples: [[
+    `Install the project's package manager in the cache`,
+    `corepack install`
+  ]]
+}));
+
+// sources/commands/Pack.ts
+var import_promises2 = require("fs/promises");
+var import_path8 = __toESM(require("path"));
+var PackCommand = class extends BaseCommand {
+  all = options_exports.Boolean(`--all`, false, {
+    description: `If true, all available default package managers will be installed`
+  });
+  json = options_exports.Boolean(`--json`, false, {
+    description: `If true, the path to the generated tarball will be printed on stdout`
+  });
+  output = options_exports.String(`-o,--output`, {
+    description: `Where the tarball should be generated; by default "corepack.tgz"`
+  });
+  patterns = options_exports.Rest();
+  async execute() {
+    const descriptors = await this.resolvePatternsToDescriptors({
+      all: this.all,
+      patterns: this.patterns
+    });
+    const installLocations = [];
+    for (const descriptor of descriptors) {
+      const resolved = await this.context.engine.resolveDescriptor(descriptor, { allowTags: true, useCache: false });
+      if (resolved === null)
+        throw new UsageError(`Failed to successfully resolve '${descriptor.range}' to a valid ${descriptor.name} release`);
+      this.context.stdout.write(`Adding ${resolved.name}@${resolved.reference} to the cache...
+`);
+      const packageManagerInfo = await this.context.engine.ensurePackageManager(resolved);
+      await this.context.engine.activatePackageManager(packageManagerInfo.locator);
+      installLocations.push(packageManagerInfo.location);
+    }
+    const baseInstallFolder = getInstallFolder();
+    const outputPath = import_path8.default.resolve(this.context.cwd, this.output ?? `corepack.tgz`);
+    if (!this.json) {
+      this.context.stdout.write(`
+`);
+      this.context.stdout.write(`Packing the selected tools in ${import_path8.default.basename(outputPath)}...
+`);
+    }
+    const { default: tar } = await Promise.resolve().then(() => __toESM(require_tar()));
+    await (0, import_promises2.mkdir)(baseInstallFolder, { recursive: true });
+    await tar.c({ gzip: true, cwd: baseInstallFolder, file: import_path8.default.resolve(outputPath) }, installLocations.map((location) => {
+      return import_path8.default.relative(baseInstallFolder, location);
+    }));
+    if (this.json) {
+      this.context.stdout.write(`${JSON.stringify(outputPath)}
+`);
+    } else {
+      this.context.stdout.write(`All done!
+`);
+    }
+  }
+};
+__publicField(PackCommand, "paths", [
+  [`pack`]
+]);
+__publicField(PackCommand, "usage", Command.Usage({
+  description: `Store package managers in a tarball`,
+  details: `
+      Download the selected package managers and store them inside a tarball suitable for use with \`corepack install -g\`.
+    `,
+  examples: [[
+    `Pack the package manager defined in the package.json file`,
+    `corepack pack`
+  ], [
+    `Pack the latest version of Yarn 1.x inside a file named corepack.tgz`,
+    `corepack pack yarn@^1`
+  ], [
+    `Pack the latest versions of all supported package managers inside a file named everything.tgz`,
+    `corepack pack --all -o everything.tgz`
+  ]]
+}));
+
+// sources/commands/Up.ts
+var import_semver5 = __toESM(require_semver2());
+var UpCommand = class extends BaseCommand {
+  async execute() {
+    const [descriptor] = await this.resolvePatternsToDescriptors({
+      all: false,
+      patterns: []
+    });
+    if (!import_semver5.default.valid(descriptor.range) && !import_semver5.default.validRange(descriptor.range))
+      throw new UsageError(`The 'corepack up' command can only be used when your project's packageManager field is set to a semver version or semver range`);
+    const resolved = await this.context.engine.resolveDescriptor(descriptor, { useCache: false });
+    if (!resolved)
+      throw new UsageError(`Failed to successfully resolve '${descriptor.range}' to a valid ${descriptor.name} release`);
+    const majorVersion = import_semver5.default.major(resolved?.reference);
+    const majorDescriptor = { name: descriptor.name, range: `^${majorVersion}.0.0` };
+    const highestVersion = await this.context.engine.resolveDescriptor(majorDescriptor, { useCache: false });
+    if (!highestVersion)
+      throw new UsageError(`Failed to find the highest release for ${descriptor.name} ${majorVersion}.x`);
+    this.context.stdout.write(`Installing ${highestVersion.name}@${highestVersion.reference} in the project...
+`);
+    const packageManagerInfo = await this.context.engine.ensurePackageManager(highestVersion);
+    await this.setLocalPackageManager(packageManagerInfo);
+  }
+};
+__publicField(UpCommand, "paths", [
+  [`up`]
+]);
+__publicField(UpCommand, "usage", Command.Usage({
+  description: `Update the package manager used in the current project`,
+  details: `
+      Retrieve the latest available version for the current major release line
+      of the package manager used in the local project, and update the project
+      to use it.
+
+      Unlike \`corepack use\` this command doesn't take a package manager name
+      nor a version range, as it will always select the latest available
+      version from the same major line. Should you need to upgrade to a new
+      major, use an explicit \`corepack use '{name}@*'\` call.
+    `,
+  examples: [[
+    `Configure the project to use the latest Yarn release`,
+    `corepack up`
+  ]]
+}));
+
+// sources/commands/Use.ts
+var UseCommand = class extends BaseCommand {
+  pattern = options_exports.String();
+  async execute() {
+    const [descriptor] = await this.resolvePatternsToDescriptors({
+      all: false,
+      patterns: [this.pattern]
+    });
+    const resolved = await this.context.engine.resolveDescriptor(descriptor, { allowTags: true, useCache: false });
+    if (resolved === null)
+      throw new UsageError(`Failed to successfully resolve '${descriptor.range}' to a valid ${descriptor.name} release`);
+    this.context.stdout.write(`Installing ${resolved.name}@${resolved.reference} in the project...
+`);
+    const packageManagerInfo = await this.context.engine.ensurePackageManager(resolved);
+    await this.setLocalPackageManager(packageManagerInfo);
+  }
+};
+__publicField(UseCommand, "paths", [
+  [`use`]
+]);
+__publicField(UseCommand, "usage", Command.Usage({
+  description: `Define the package manager to use for the current project`,
+  details: `
+      When run, this command will retrieve the latest release matching the
+      provided descriptor, assign it to the project's package.json file, and
+      automatically perform an install.
+    `,
+  examples: [[
+    `Configure the project to use the latest Yarn release`,
+    `corepack use 'yarn@*'`
+  ]]
+}));
+
+// sources/commands/deprecated/Hydrate.ts
+var import_promises3 = require("fs/promises");
+var import_path9 = __toESM(require("path"));
+var HydrateCommand = class extends Command {
+  activate = options_exports.Boolean(`--activate`, false, {
+    description: `If true, this release will become the default one for this package manager`
+  });
+  fileName = options_exports.String();
+  async execute() {
+    const installFolder = getInstallFolder();
+    const fileName = import_path9.default.resolve(this.context.cwd, this.fileName);
+    const archiveEntries = /* @__PURE__ */ new Map();
+    let hasShortEntries = false;
+    const { default: tar } = await Promise.resolve().then(() => __toESM(require_tar()));
+    await tar.t({ file: fileName, onentry: (entry) => {
+      const segments = entry.path.split(/\//g);
+      if (segments.length < 3) {
+        hasShortEntries = true;
+      } else {
+        let references = archiveEntries.get(segments[0]);
+        if (typeof references === `undefined`)
+          archiveEntries.set(segments[0], references = /* @__PURE__ */ new Set());
+        references.add(segments[1]);
+      }
+    } });
+    if (hasShortEntries || archiveEntries.size < 1)
+      throw new UsageError(`Invalid archive format; did it get generated by 'corepack prepare'?`);
+    for (const [name, references] of archiveEntries) {
+      for (const reference of references) {
+        if (!isSupportedPackageManager(name))
+          throw new UsageError(`Unsupported package manager '${name}'`);
+        if (this.activate)
+          this.context.stdout.write(`Hydrating ${name}@${reference} for immediate activation...
+`);
+        else
+          this.context.stdout.write(`Hydrating ${name}@${reference}...
+`);
+        await (0, import_promises3.mkdir)(installFolder, { recursive: true });
+        await tar.x({ file: fileName, cwd: installFolder }, [`${name}/${reference}`]);
+        if (this.activate) {
+          await this.context.engine.activatePackageManager({ name, reference });
+        }
+      }
+    }
+    this.context.stdout.write(`All done!
+`);
+  }
+};
+__publicField(HydrateCommand, "paths", [
+  [`hydrate`]
+]);
+
+// sources/commands/deprecated/Prepare.ts
+var import_promises4 = require("fs/promises");
+var import_path10 = __toESM(require("path"));
+var PrepareCommand = class extends Command {
+  activate = options_exports.Boolean(`--activate`, false, {
+    description: `If true, this release will become the default one for this package manager`
+  });
+  all = options_exports.Boolean(`--all`, false, {
+    description: `If true, all available default package managers will be installed`
+  });
+  json = options_exports.Boolean(`--json`, false, {
+    description: `If true, the output will be the path of the generated tarball`
+  });
+  output = options_exports.String(`-o,--output`, {
+    description: `If true, the installed package managers will also be stored in a tarball`,
+    tolerateBoolean: true
+  });
+  specs = options_exports.Rest();
   async execute() {
     if (this.all && this.specs.length > 0)
       throw new UsageError(`The --all option cannot be used along with an explicit package manager specification`);
@@ -39642,14 +40118,14 @@ var PrepareCommand = class extends Command {
     if (this.output) {
       const outputName = typeof this.output === `string` ? this.output : `corepack.tgz`;
       const baseInstallFolder = getInstallFolder();
-      const outputPath = import_path8.default.resolve(this.context.cwd, outputName);
+      const outputPath = import_path10.default.resolve(this.context.cwd, outputName);
       if (!this.json)
-        this.context.stdout.write(`Packing the selected tools in ${import_path8.default.basename(outputPath)}...
+        this.context.stdout.write(`Packing the selected tools in ${import_path10.default.basename(outputPath)}...
 `);
       const { default: tar } = await Promise.resolve().then(() => __toESM(require_tar()));
-      await (0, import_promises3.mkdir)(baseInstallFolder, { recursive: true });
-      await tar.c({ gzip: true, cwd: baseInstallFolder, file: import_path8.default.resolve(outputPath) }, installLocations.map((location) => {
-        return import_path8.default.relative(baseInstallFolder, location);
+      await (0, import_promises4.mkdir)(baseInstallFolder, { recursive: true });
+      await tar.c({ gzip: true, cwd: baseInstallFolder, file: import_path10.default.resolve(outputPath) }, installLocations.map((location) => {
+        return import_path10.default.relative(baseInstallFolder, location);
       }));
       if (this.json) {
         this.context.stdout.write(`${JSON.stringify(outputPath)}
@@ -39661,33 +40137,9 @@ var PrepareCommand = class extends Command {
     }
   }
 };
-PrepareCommand.paths = [
+__publicField(PrepareCommand, "paths", [
   [`prepare`]
-];
-PrepareCommand.usage = Command.Usage({
-  description: `Generate a package manager archive`,
-  details: `
-      This command makes sure that the specified package managers are installed in the local cache. Calling this command explicitly unless you operate in an environment without network access (in which case you'd have to call \`prepare\` while building your image, to make sure all tools are available for later use).
-
-      When the \`-o,--output\` flag is set, Corepack will also compress the resulting package manager into a format suitable for \`corepack hydrate\`, and will store it at the specified location on the disk.
-    `,
-  examples: [[
-    `Prepare the package manager from the active project`,
-    `$0 prepare`
-  ], [
-    `Prepare a specific Yarn version`,
-    `$0 prepare yarn@2.2.2`
-  ], [
-    `Prepare the latest available pnpm version`,
-    `$0 prepare pnpm@latest --activate`
-  ], [
-    `Generate an archive for a specific Yarn version`,
-    `$0 prepare yarn@2.2.2 -o`
-  ], [
-    `Generate a named archive`,
-    `$0 prepare yarn@2.2.2 --output=yarn.tgz`
-  ]]
-});
+]);
 
 // sources/miscUtils.ts
 var Cancellation = class extends Error {
@@ -39754,6 +40206,7 @@ async function runMain(argv) {
   };
   const [firstArg, ...restArgs] = argv;
   const request = getPackageManagerRequestFromCli(firstArg, context);
+  let code;
   if (!request) {
     const cli = new Cli({
       binaryLabel: `Corepack`,
@@ -39762,11 +40215,16 @@ async function runMain(argv) {
     });
     cli.register(builtins_exports.HelpCommand);
     cli.register(builtins_exports.VersionCommand);
-    cli.register(EnableCommand);
     cli.register(DisableCommand);
+    cli.register(EnableCommand);
+    cli.register(InstallGlobalCommand);
+    cli.register(InstallLocalCommand);
+    cli.register(PackCommand);
+    cli.register(UpCommand);
+    cli.register(UseCommand);
     cli.register(HydrateCommand);
     cli.register(PrepareCommand);
-    await cli.runExit(argv, context);
+    code = await cli.run(argv, context);
   } else {
     const cli = new Cli({
       binaryLabel: `'${request.binaryName}', via Corepack`,
@@ -39774,18 +40232,15 @@ async function runMain(argv) {
       binaryVersion: `corepack/${version}`
     });
     cli.register(class BinaryCommand extends Command {
-      constructor() {
-        super(...arguments);
-        this.proxy = options_exports.Proxy();
-      }
+      proxy = options_exports.Proxy();
       async execute() {
         return executePackageManagerRequest(request, this.proxy, this.context);
       }
     });
-    const code = await cli.run(restArgs, context);
-    if (code !== 0) {
-      process.exitCode ??= code;
-    }
+    code = await cli.run(restArgs, context);
+  }
+  if (code !== 0) {
+    process.exitCode ??= code;
   }
 }
 // Annotate the CommonJS export names for ESM import in node:
