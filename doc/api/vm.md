@@ -62,7 +62,7 @@ changes:
     - v17.0.0
     - v16.12.0
     pr-url: https://github.com/nodejs/node/pull/40249
-    description: Added support for import assertions to the
+    description: Added support for import attributes to the
                  `importModuleDynamically` parameter.
   - version: v10.6.0
     pr-url: https://github.com/nodejs/node/pull/20300
@@ -103,7 +103,7 @@ changes:
     [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
     * `specifier` {string} specifier passed to `import()`
     * `script` {vm.Script}
-    * `importAssertions` {Object} The `"assert"` value passed to the
+    * `importAttributes` {Object} The `"with"` value passed to the
       [`optionsExpression`][] optional parameter, or an empty object if no value
       was provided.
     * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
@@ -617,6 +617,17 @@ The identifier of the current module, as set in the constructor.
 
 ### `module.link(linker)`
 
+<!-- YAML
+changes:
+  - version:
+    - v21.1.0
+    - v20.10.0
+    - v18.19.0
+    pr-url: https://github.com/nodejs/node/pull/50141
+    description: The option `extra.assert` is renamed to `extra.attributes`. The
+                 former name is still provided for backward compatibility.
+-->
+
 * `linker` {Function}
   * `specifier` {string} The specifier of the requested module:
     ```mjs
@@ -627,15 +638,14 @@ The identifier of the current module, as set in the constructor.
   * `referencingModule` {vm.Module} The `Module` object `link()` is called on.
 
   * `extra` {Object}
-    * `assert` {Object} The data from the assertion:
-      <!-- eslint-skip -->
-      ```js
-      import foo from 'foo' assert { name: 'value' };
-      //                           ^^^^^^^^^^^^^^^^^ the assertion
+    * `attributes` {Object} The data from the attribute:
+      ```mjs
+      import foo from 'foo' with { name: 'value' };
+      //                         ^^^^^^^^^^^^^^^^^ the attribute
       ```
-      Per ECMA-262, hosts are expected to ignore assertions that they do not
-      support, as opposed to, for example, triggering an error if an
-      unsupported assertion is present.
+      Per ECMA-262, hosts are expected to trigger an error if an
+      unsupported attribute is present.
+    * `assert` {Object} Alias for `extra.attributes`.
 
   * Returns: {vm.Module|Promise}
 * Returns: {Promise}
@@ -734,7 +744,7 @@ changes:
     - v17.0.0
     - v16.12.0
     pr-url: https://github.com/nodejs/node/pull/40249
-    description: Added support for import assertions to the
+    description: Added support for import attributes to the
                  `importModuleDynamically` parameter.
 -->
 
@@ -767,7 +777,7 @@ changes:
     [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
     * `specifier` {string} specifier passed to `import()`
     * `module` {vm.Module}
-    * `importAssertions` {Object} The `"assert"` value passed to the
+    * `importAttributes` {Object} The `"with"` value passed to the
       [`optionsExpression`][] optional parameter, or an empty object if no value
       was provided.
     * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
@@ -982,7 +992,7 @@ changes:
     - v17.0.0
     - v16.12.0
     pr-url: https://github.com/nodejs/node/pull/40249
-    description: Added support for import assertions to the
+    description: Added support for import attributes to the
                  `importModuleDynamically` parameter.
   - version: v15.9.0
     pr-url: https://github.com/nodejs/node/pull/35431
@@ -1028,7 +1038,7 @@ changes:
     [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
     * `specifier` {string} specifier passed to `import()`
     * `function` {Function}
-    * `importAssertions` {Object} The `"assert"` value passed to the
+    * `importAttributes` {Object} The `"with"` value passed to the
       [`optionsExpression`][] optional parameter, or an empty object if no value
       was provided.
     * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
@@ -1045,6 +1055,9 @@ function with the given `params`.
 <!-- YAML
 added: v0.3.1
 changes:
+  - version: v21.2.0
+    pr-url: https://github.com/nodejs/node/pull/50360
+    description: The `importModuleDynamically` option is supported now.
   - version: v14.6.0
     pr-url: https://github.com/nodejs/node/pull/34023
     description: The `microtaskMode` option is supported now.
@@ -1077,6 +1090,21 @@ changes:
     scheduled through `Promise`s and `async function`s) will be run immediately
     after a script has run through [`script.runInContext()`][].
     They are included in the `timeout` and `breakOnSigint` scopes in that case.
+  * `importModuleDynamically` {Function} Called when `import()` is called in
+    this context without a referrer script or module. If this option is not
+    specified, calls to `import()` will reject with
+    [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`][]. If
+    `--experimental-vm-modules` isn't set, this callback will be ignored and
+    calls to `import()` will reject with
+    [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
+    * `specifier` {string} specifier passed to `import()`
+    * `contextObject` {Object} contextified object
+    * `importAttributes` {Object} The `"with"` value passed to the
+      [`optionsExpression`][] optional parameter, or an empty object if no value
+      was provided.
+    * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
+      recommended in order to take advantage of error tracking, and to avoid
+      issues with namespaces that contain `then` function exports.
 * Returns: {Object} contextified object.
 
 If given a `contextObject`, the `vm.createContext()` method will [prepare
@@ -1214,7 +1242,7 @@ changes:
     - v17.0.0
     - v16.12.0
     pr-url: https://github.com/nodejs/node/pull/40249
-    description: Added support for import assertions to the
+    description: Added support for import attributes to the
                  `importModuleDynamically` parameter.
   - version: v6.3.0
     pr-url: https://github.com/nodejs/node/pull/6635
@@ -1254,7 +1282,7 @@ changes:
     [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
     * `specifier` {string} specifier passed to `import()`
     * `script` {vm.Script}
-    * `importAssertions` {Object} The `"assert"` value passed to the
+    * `importAttributes` {Object} The `"with"` value passed to the
       [`optionsExpression`][] optional parameter, or an empty object if no value
       was provided.
     * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
@@ -1294,7 +1322,7 @@ changes:
     - v17.0.0
     - v16.12.0
     pr-url: https://github.com/nodejs/node/pull/40249
-    description: Added support for import assertions to the
+    description: Added support for import attributes to the
                  `importModuleDynamically` parameter.
   - version: v14.6.0
     pr-url: https://github.com/nodejs/node/pull/34023
@@ -1355,7 +1383,7 @@ changes:
     [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
     * `specifier` {string} specifier passed to `import()`
     * `script` {vm.Script}
-    * `importAssertions` {Object} The `"assert"` value passed to the
+    * `importAttributes` {Object} The `"with"` value passed to the
       [`optionsExpression`][] optional parameter, or an empty object if no value
       was provided.
     * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
@@ -1399,7 +1427,7 @@ changes:
     - v17.0.0
     - v16.12.0
     pr-url: https://github.com/nodejs/node/pull/40249
-    description: Added support for import assertions to the
+    description: Added support for import attributes to the
                  `importModuleDynamically` parameter.
   - version: v6.3.0
     pr-url: https://github.com/nodejs/node/pull/6635
@@ -1437,7 +1465,7 @@ changes:
     [`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING_FLAG`][].
     * `specifier` {string} specifier passed to `import()`
     * `script` {vm.Script}
-    * `importAssertions` {Object} The `"assert"` value passed to the
+    * `importAttributes` {Object} The `"with"` value passed to the
       [`optionsExpression`][] optional parameter, or an empty object if no value
       was provided.
     * Returns: {Module Namespace Object|vm.Module} Returning a `vm.Module` is
