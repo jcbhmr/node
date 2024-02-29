@@ -827,6 +827,15 @@ Environment::Environment(IsolateData* isolate_data,
     }
   }
 
+  // We are supposed to call builtin_loader_.SetEagerCompile() in
+  // snapshot mode here because it's beneficial to compile built-ins
+  // loaded in the snapshot eagerly and include the code of inner functions
+  // that are likely to be used by user since they are part of the core
+  // startup. But this requires us to start the coverage collections
+  // before Environment/Context creation which is not currently possible.
+  // TODO(joyeecheung): refactor V8ProfilerConnection classes to parse
+  // JSON without v8 and lift this restriction.
+
   // We'll be creating new objects so make sure we've entered the context.
   HandleScope handle_scope(isolate);
 
@@ -839,7 +848,7 @@ Environment::Environment(IsolateData* isolate_data,
   }
 
   set_env_vars(per_process::system_environment);
-  enabled_debug_list_.Parse(env_vars(), isolate);
+  enabled_debug_list_.Parse(env_vars());
 
   // We create new copies of the per-Environment option sets, so that it is
   // easier to modify them after Environment creation. The defaults are
@@ -871,7 +880,10 @@ Environment::Environment(IsolateData* isolate_data,
   destroy_async_id_list_.reserve(512);
 
   performance_state_ = std::make_unique<performance::PerformanceState>(
-      isolate, time_origin_, MAYBE_FIELD_PTR(env_info, performance_state));
+      isolate,
+      time_origin_,
+      time_origin_timestamp_,
+      MAYBE_FIELD_PTR(env_info, performance_state));
 
   if (*TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACING_CATEGORY_NODE1(environment)) != 0) {
@@ -898,21 +910,25 @@ Environment::Environment(IsolateData* isolate_data,
       options_->allow_native_addons = false;
     }
     flags_ = flags_ | EnvironmentFlags::kNoCreateInspector;
-    permission()->Apply({"*"}, permission::PermissionScope::kInspector);
+    permission()->Apply(this, {"*"}, permission::PermissionScope::kInspector);
     if (!options_->allow_child_process) {
-      permission()->Apply({"*"}, permission::PermissionScope::kChildProcess);
+      permission()->Apply(
+          this, {"*"}, permission::PermissionScope::kChildProcess);
     }
     if (!options_->allow_worker_threads) {
-      permission()->Apply({"*"}, permission::PermissionScope::kWorkerThreads);
+      permission()->Apply(
+          this, {"*"}, permission::PermissionScope::kWorkerThreads);
     }
 
     if (!options_->allow_fs_read.empty()) {
-      permission()->Apply(options_->allow_fs_read,
+      permission()->Apply(this,
+                          options_->allow_fs_read,
                           permission::PermissionScope::kFileSystemRead);
     }
 
     if (!options_->allow_fs_write.empty()) {
-      permission()->Apply(options_->allow_fs_write,
+      permission()->Apply(this,
+                          options_->allow_fs_write,
                           permission::PermissionScope::kFileSystemWrite);
     }
   }
@@ -1824,7 +1840,7 @@ void Environment::DeserializeProperties(const EnvSerializeInfo* info) {
   immediate_info_.Deserialize(ctx);
   timeout_info_.Deserialize(ctx);
   tick_info_.Deserialize(ctx);
-  performance_state_->Deserialize(ctx, time_origin_);
+  performance_state_->Deserialize(ctx, time_origin_, time_origin_timestamp_);
   exit_info_.Deserialize(ctx);
   stream_base_state_.Deserialize(ctx);
   should_abort_on_uncaught_toggle_.Deserialize(ctx);

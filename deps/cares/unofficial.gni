@@ -1,9 +1,3 @@
-# Copyright (c) 2013-2019 GitHub Inc.
-# Copyright 2019 the V8 project authors. All rights reserved.
-# Copyright 2023 Microsoft Inc.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 # This file is used by GN for building, which is NOT the build system used for
 # building official binaries.
 # Please edit the gyp files if you are making changes to build system.
@@ -75,6 +69,8 @@ template("cares_gn_build") {
       cflags_c = [
         "-Wno-implicit-fallthrough",
         "-Wno-unreachable-code",
+        # Remove after https://github.com/c-ares/c-ares/pull/709 lands in Node.
+        "-Wno-unused-result",
       ]
     }
   }
