@@ -229,8 +229,6 @@
         *
         *
         *
-        *
-        *
 
  subtest sync throw fails (*ms)
 
@@ -263,6 +261,13 @@
   
   {
     bar: 1,
+    baz: {
+      date: 1970-01-01T00:00:00.000Z,
+      null: null,
+      number: 1,
+      string: 'Hello',
+      undefined: undefined
+    },
     boo: [
       1
     ],
@@ -272,6 +277,13 @@
   should loosely deep-equal
   
   {
+    baz: {
+      date: 1970-01-01T00:00:00.000Z,
+      null: null,
+      number: 1,
+      string: 'Hello',
+      undefined: undefined
+    },
     boo: [
       1
     ],
@@ -501,8 +513,6 @@
       *
       *
       *
-      *
-      *
 
 *
  timed out async test (*ms)
@@ -536,6 +546,13 @@
   
   {
     bar: 1,
+    baz: {
+      date: 1970-01-01T00:00:00.000Z,
+      null: null,
+      number: 1,
+      string: 'Hello',
+      undefined: undefined
+    },
     boo: [
       1
     ],
@@ -545,6 +562,13 @@
   should loosely deep-equal
   
   {
+    baz: {
+      date: 1970-01-01T00:00:00.000Z,
+      null: null,
+      number: 1,
+      string: 'Hello',
+      undefined: undefined
+    },
     boo: [
       1
     ],

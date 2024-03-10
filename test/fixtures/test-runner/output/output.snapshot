@@ -552,8 +552,6 @@ not ok 51 - custom inspect symbol that throws fail
         *
         *
         *
-        *
-        *
       ...
     1..2
 not ok 52 - subtest sync throw fails
@@ -643,6 +641,13 @@ not ok 61 - assertion errors display actual and expected properly
     
     {
       bar: 1,
+      baz: {
+        date: 1970-01-01T00:00:00.000Z,
+        null: null,
+        number: 1,
+        string: 'Hello',
+        undefined: undefined
+      },
       boo: [
         1
       ],
@@ -652,6 +657,13 @@ not ok 61 - assertion errors display actual and expected properly
     should loosely deep-equal
     
     {
+      baz: {
+        date: 1970-01-01T00:00:00.000Z,
+        null: null,
+        number: 1,
+        string: 'Hello',
+        undefined: undefined
+      },
       boo: [
         1
       ],
@@ -665,6 +677,11 @@ not ok 61 - assertion errors display actual and expected properly
   expected:
     boo:
       0: 1
+    baz:
+      date: 1970-01-01T00:00:00.000Z
+      null: ~
+      number: 1
+      string: 'Hello'
     circular:
       bar: 2
       c: <Circular>
@@ -673,6 +690,11 @@ not ok 61 - assertion errors display actual and expected properly
     bar: 1
     boo:
       0: 1
+    baz:
+      date: 1970-01-01T00:00:00.000Z
+      null: ~
+      number: 1
+      string: 'Hello'
   operator: 'deepEqual'
   stack: |-
     *

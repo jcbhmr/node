@@ -1604,7 +1604,7 @@ $ node negate.js --no-logfile --logfile=test.log --color --no-color
 > Stability: 1.1 - Active development
 
 <!-- YAML
-added: REPLACEME
+added: v21.7.0
 -->
 
 * `content` {string}
@@ -1803,7 +1803,7 @@ console.log(util.stripVTControlCharacters('\u001B[4mvalue\u001B[0m'));
 > Stability: 1.1 - Active development
 
 <!-- YAML
-added: REPLACEME
+added: v21.7.0
 -->
 
 * `format` {string} A text format defined in `util.inspect.colors`.
