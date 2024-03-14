@@ -777,7 +777,7 @@ added:
   - v20.10.0
 -->
 
-> Stability: 1.0 - Early development
+> Stability: 1.1 - Active development
 
 Node.js will inspect the source code of ambiguous input to determine whether it
 contains ES module syntax; if such syntax is detected, the input will be treated
@@ -792,9 +792,15 @@ Ambiguous input is defined as:
   `--experimental-default-type` are specified.
 
 ES module syntax is defined as syntax that would throw when evaluated as
-CommonJS. This includes `import` and `export` statements and `import.meta`
-references. It does _not_ include `import()` expressions, which are valid in
-CommonJS.
+CommonJS. This includes the following:
+
+* `import` statements (but _not_ `import()` expressions, which are valid in
+  CommonJS).
+* `export` statements.
+* `import.meta` references.
+* `await` at the top level of a module.
+* Lexical redeclarations of the CommonJS wrapper variables (`require`, `module`,
+  `exports`, `__dirname`, `__filename`).
 
 ### `--experimental-import-meta-resolve`
 
@@ -1865,6 +1871,15 @@ added:
 
 The maximum number of test files that the test runner CLI will execute
 concurrently. The default value is `os.availableParallelism() - 1`.
+
+### `--test-force-exit`
+
+<!-- YAML
+added: REPLACEME
+-->
+
+Configures the test runner to exit the process once all known tests have
+finished executing even if the event loop would otherwise remain active.
 
 ### `--test-name-pattern`
 
